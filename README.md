@@ -37,6 +37,7 @@ print("Log loss: ", metrics.log_loss(y_test, clf.predict_proba(x_test)))
 ```
 
 - Classification from svm:
+
 ```python
 from pydd.MLP import MLPfromSVM
 
