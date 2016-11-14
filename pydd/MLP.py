@@ -9,13 +9,13 @@ import json
 import time
 import tempfile
 import numpy as np
+from sklearn.base import BaseEstimator
 from sklearn.datasets import dump_svmlight_file
-from pydd.utils import os_utils
-from pydd.utils import time_utils
+from pydd.utils import os_utils, time_utils
 from pydd.utils.dd_utils import AbstractDDCalls, to_array
 
 
-class genericMLP(AbstractDDCalls):
+class genericMLP(AbstractDDCalls, BaseEstimator):
     def __init__(self, host='localhost',
                  port=8080,
                  sname='',
@@ -35,24 +35,60 @@ class genericMLP(AbstractDDCalls):
                  regression=False,
                  finetuning=False,
                  db=True):
-
         self.host = host
         self.port = port
         self.sname = sname
         self.mllib = mllib
+        self.description = description
+        self.repository = repository
+        self.templates = templates
+        self.connector = connector
+        self.nclasses = nclasses
+        self.ntargets = ntargets
+        self.gpu = gpu
+        self.gpuid = gpuid
+        self.template = template
+        self.layers = layers
+        self.activation = activation
+        self.dropout = dropout
+        self.regression = regression
+        self.finetuning = finetuning
+        self.db = db
+
+        self.params = {
+            'host': self.host,
+            'port': self.port,
+            'sname': self.sname,
+            'mllib': self.mllib,
+            'description': self.description,
+            'repository': self.repository,
+            'templates': self.templates,
+            'connector': self.connector,
+            'nclasses': self.nclasses,
+            'ntargets': self.ntargets,
+            'gpu': self.gpu,
+            'gpuid': self.gpuid,
+            'template': self.template,
+            'layers': self.layers,
+            'activation': self.activation,
+            'dropout': self.dropout,
+            'regression': self.regression,
+            'finetuning': self.finetuning,
+            'db': self.db,
+        }
+
         self.n_pred = 0
         self.n_fit = 0
         self.calls = []
         self.answers = []
-        self.model = {'templates': templates, 'repository': repository}
-        self.description = description
-        self.service_parameters_mllib = {'nclasses': nclasses, 'ntargets': ntargets,
-                                         'gpu': gpu, 'gpuid': gpuid,
-                                         'template': template, 'layers': layers,
-                                         'activation': activation,
-                                         'dropout': dropout, 'regression': regression,
-                                         'finetuning': finetuning, 'db': db}
-        self.service_parameters_input = {'connector': connector}
+        self.model = {'templates': self.templates, 'repository': self.repository}
+        self.service_parameters_mllib = {'nclasses': self.nclasses, 'ntargets': self.ntargets,
+                                         'gpu': self.gpu, 'gpuid': self.gpuid,
+                                         'template': self.template, 'layers': self.layers,
+                                         'activation': self.activation,
+                                         'dropout': self.dropout, 'regression': self.regression,
+                                         'finetuning': self.finetuning, 'db': self.db}
+        self.service_parameters_input = {'connector': self.connector}
         self.service_parameters_output = {}
         super(genericMLP, self).__init__(self.host, self.port)
 
@@ -75,9 +111,6 @@ class genericMLP(AbstractDDCalls):
 
         with open("{}/model.json".format(self.model['repository'])) as f:
             self.calls = [json.loads(line, encoding='utf-8') for line in f]
-
-    def __repr__(self):
-        return self.__class__.__name__
 
     def fit(self, filepaths, iterations=100, test_interval=None, base_lr=0.1,
             solver_type='SGD', batch_size=128, metrics=['mcll', 'accp'], class_weights=None):
@@ -150,6 +183,16 @@ class genericMLP(AbstractDDCalls):
 
         y_score = self.predict_proba(X)
         return (np.argmax(y_score, 1)).reshape(len(y_score), 1)
+
+    def get_params(self, deep=True):
+        params = self.params
+        return params
+
+    def set_params(self, **kwargs):
+        params = self.get_params()
+        params.update(kwargs)
+        self.__init__(**params)
+        return self
 
 
 class MLPfromSVM(genericMLP):
@@ -293,6 +336,5 @@ class MLPfromArray(genericMLP):
         return y_score
 
     def predict(self, X):
-
         y_score = self.predict_proba(X)
         return (np.argmax(y_score, 1)).reshape(len(y_score), 1)
