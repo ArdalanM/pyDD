@@ -4,28 +4,18 @@
 @brief:
 """
 import os
-from sklearn import datasets, preprocessing, model_selection, metrics
-from pydd.MLP import MLPfromSVM, MLPfromArray
 from pydd.utils import os_utils
-
-
-def create_dataset():
-
-    X, Y = datasets.load_digits(return_X_y=True)
-    x_train, x_test, y_train, y_test = model_selection.train_test_split(X, Y, test_size=0.2,
-                                                                        random_state=1337)
-    scl = preprocessing.StandardScaler()
-    x_train = scl.fit_transform(x_train)
-    x_test = scl.transform(x_test)
-
-    return x_train, y_train, x_test, y_test
+from pydd.MLP import MLPfromSVM, MLPfromArray
+from sklearn import datasets, preprocessing, model_selection, metrics
 
 
 # Parameters
 snames = ['svm_predict_from_model', 'array_predict_from_model']
 model_repo = [os.path.abspath('model_svm'), os.path.abspath('model_array')]
-params = {'host': 'localhost', 'port': 8081, 'nclasses': 10, 'layers': [100, 100], 'activation': 'relu',
-          'dropout': 0.5, 'db': True, 'gpu': True}
+params = {'host': 'localhost', 'port': 8081,
+          'nclasses': 10, 'layers': [100, 100],
+          'activation': 'relu', 'dropout': 0.2,
+          'db': True, 'gpu': True}
 
 # We make sure model repo does not exist
 for folder in model_repo:
@@ -33,8 +23,13 @@ for folder in model_repo:
         os_utils._remove_dirs([folder])
 os_utils._create_dirs(model_repo)
 
+
 # Create dataset
-x_train, y_train, x_test, y_test = create_dataset()
+X, Y = datasets.load_digits(return_X_y=True)
+X = preprocessing.StandardScaler().fit_transform(X)
+x_train, x_test, y_train, y_test = model_selection.train_test_split(X, Y, test_size=0.2,
+                                                                    random_state=1337)
+# Save data in .svm format
 train_path = os.path.abspath('x_train.svm')
 test_path = os.path.abspath('x_test.svm')
 datasets.dump_svmlight_file(x_train, y_train, train_path)
