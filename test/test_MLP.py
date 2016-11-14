@@ -3,20 +3,12 @@
 @author: Ardalan MEHRANI <ardalan77400@gmail.com>
 @brief:
 """
-
 import os
 import pytest
 import numpy as np
 from pydd.utils import os_utils
 from pydd.MLP import MLPfromArray, MLPfromSVM
 from sklearn import datasets, metrics, model_selection, preprocessing
-
-
-def create_dataset(n_classes):
-    X, Y = datasets.load_digits(return_X_y=True, n_class=n_classes)
-    X = preprocessing.StandardScaler().fit_transform(X)
-    return X, Y
-
 
 # Parameters
 seed = 1337
@@ -25,7 +17,8 @@ n_classes = 10
 connec_param = {'host': 'localhost', 'port': 8081}
 
 # Create dataset
-X, Y = create_dataset(n_classes)
+X, Y = datasets.load_digits(return_X_y=True, n_class=n_classes)
+X = preprocessing.StandardScaler().fit_transform(X)
 x_train, x_test, y_train, y_test = model_selection.train_test_split(X, Y,
                                                                     test_size=test_size,
                                                                     random_state=seed)
@@ -94,6 +87,31 @@ class TestSVM(object):
         assert np.array_equal(y_pred_array, clf_array.predict(x_test))
         os_utils._remove_files([train_path, test_path])
         os_utils._remove_dirs(model_repo)
+
+    def test_sklearn(self):
+
+        params = {'gpu': True, 'nclasses': n_classes}
+        params.update(connec_param)
+
+        clf = MLPfromArray(**params)
+        skf = model_selection.StratifiedKFold(n_splits=2, shuffle=True, random_state=seed)
+        scorer = metrics.make_scorer(metrics.accuracy_score, greater_is_better=True)
+
+        scores = model_selection.cross_val_score(clf, X, Y, scoring=scorer, cv=skf)
+        assert scores.all() > 0.9
+
+        clf = MLPfromArray(**params)
+        param_grid = {'layers': [[10], [100]]}
+        grid = model_selection.GridSearchCV(clf, param_grid, scoring=scorer, cv=skf)
+        grid.fit(X, Y)
+        assert grid.best_score_ > 0.9
+
+        clf = MLPfromArray(**params)
+        param_grid = {'dropout': [0.1, 0.8], 'layers': [[10], [100]]}
+        y_pred = model_selection.cross_val_predict(clf, X, Y, cv=skf, method='predict_proba')
+        score = metrics.accuracy_score(Y, y_pred.argmax(-1))
+        assert score > 0.9
+
 
 if __name__ == '__main__':
     pytest.main([__file__])
