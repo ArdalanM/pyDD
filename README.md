@@ -19,8 +19,8 @@ Installation
 
 Examples
 --------
-Make sure DeepDetect is up and running: 
-```./main/dede```
+Make sure DeepDetect is up and running:  
+`./main/dede`
 
 * Classification from array:
 
