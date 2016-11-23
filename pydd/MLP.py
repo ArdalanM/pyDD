@@ -120,6 +120,7 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
             momentum=None,
             weight_decay=None,
             power=None,
+            gamma=None,
             iter_size=1,
             batch_size=128,
             metrics=['mcll', 'accp'],
@@ -158,6 +159,7 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
                        'momentum': momentum,
                        'weight_decay': weight_decay,
                        'power': power,
+                       'gamma': gamma,
                        'iter_size': iter_size},
             'net': {'batch_size': batch_size},
             'class_weights': class_weights if class_weights else [1.] * self.service_parameters_mllib['nclasses']
