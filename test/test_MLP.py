@@ -14,14 +14,12 @@ from sklearn import datasets, metrics, model_selection, preprocessing
 seed = 1337
 test_size = 0.2
 n_classes = 10
-connec_param = {'host': 'localhost', 'port': 8081}
+connec_param = {'host': 'localhost', 'port': 8085}
 
 # Create dataset
 X, Y = datasets.load_digits(return_X_y=True, n_class=n_classes)
 X = preprocessing.StandardScaler().fit_transform(X)
-x_train, x_test, y_train, y_test = model_selection.train_test_split(X, Y,
-                                                                    test_size=test_size,
-                                                                    random_state=seed)
+x_train, x_test, y_train, y_test = model_selection.train_test_split(X, Y, test_size=test_size, random_state=seed)
 
 
 class TestSVM(object):
@@ -36,8 +34,8 @@ class TestSVM(object):
         datasets.dump_svmlight_file(x_test, y_test, test_path)
 
         clfs = [
-            [{'filepaths': train_path}, test_path, MLPfromSVM(**params)],
-            [{'filepaths': [train_path, test_path]}, test_path, MLPfromSVM(**params)],
+            [{'X': train_path}, test_path, MLPfromSVM(**params)],
+            [{'X': [train_path, test_path]}, test_path, MLPfromSVM(**params)],
             [{'X': x_train, 'Y': y_train}, x_test, MLPfromArray(**params)],
             [{'X': x_train, 'Y': y_train, 'validation_data': [(x_test, y_test)]}, x_test, MLPfromArray(**params)]
         ]
@@ -107,7 +105,6 @@ class TestSVM(object):
         assert grid.best_score_ > 0.9
 
         clf = MLPfromArray(**params)
-        param_grid = {'dropout': [0.1, 0.8], 'layers': [[10], [100]]}
         y_pred = model_selection.cross_val_predict(clf, X, Y, cv=skf, method='predict_proba')
         score = metrics.accuracy_score(Y, y_pred.argmax(-1))
         assert score > 0.9
