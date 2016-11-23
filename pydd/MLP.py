@@ -213,9 +213,6 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
 
         data = [X]
         if type(X) == np.ndarray:
-            # Prediction from numpy array
-            # pred_f = os.path.join(self.data_folder, "x_pred{}_{}.svm".format(self.n_pred, time_utils.fulltimestamp()))
-            # dump_svmlight_file(X, [-1] * X.shape[0], pred_f)
             data = self._to_list_of_svm_strings(X)
 
         nclasses = self.service_parameters_mllib['nclasses']
