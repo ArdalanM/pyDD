@@ -4,10 +4,7 @@
 @brief:
 """
 import numpy as np
-import os
-from pydd.utils import time_utils
 from pydd.utils.dd_client import DD
-from sklearn.datasets import dump_svmlight_file
 
 
 class AbstractDDCalls(object):
