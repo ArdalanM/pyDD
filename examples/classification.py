@@ -7,11 +7,12 @@ import numpy as np
 from pydd.MLP import MLPfromArray
 from sklearn import datasets, metrics, model_selection, preprocessing
 
+
 # Parameters
 seed = 1337
 np.random.seed(seed)  # for reproducibility
 n_classes = 10
-params = {'port': 8081, 'nclasses': n_classes, 'gpu': True}
+params = {'port': 8085, 'nclasses': n_classes, 'gpu': True}
 split_params = {'test_size': 0.2, 'random_state': seed}
 
 # Arbitrary list of class weights to asses model behavior
@@ -26,7 +27,7 @@ x_train, x_test, y_train, y_test = model_selection.train_test_split(X, y, **spli
 
 for cw in class_weights:
     clf = MLPfromArray(**params)
-    clf.fit(x_train, y_train, iterations=500, batch_size=128, class_weights=cw)
+    clf.fit(x_train, y_train, iterations=500, batch_size=128, class_weights=cw,weight_decay=0.000001)
     y_pred = clf.predict(x_test)
     report = metrics.classification_report(y_test, y_pred)
     print(report)
