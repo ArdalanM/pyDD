@@ -13,7 +13,7 @@ X = preprocessing.StandardScaler().fit_transform(X)
 seed = 1337
 nclasses = 10
 test_size = 0.2
-params = {'port': 8081, 'nclasses': nclasses,
+params = {'port': 8085, 'nclasses': nclasses,
           'layers': [100], 'activation': 'relu',
           'dropout': 0.1, 'db': True, 'gpu': True}
 
