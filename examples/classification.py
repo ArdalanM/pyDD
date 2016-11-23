@@ -27,7 +27,8 @@ x_train, x_test, y_train, y_test = model_selection.train_test_split(X, y, **spli
 
 for cw in class_weights:
     clf = MLPfromArray(**params)
-    clf.fit(x_train, y_train, iterations=500, batch_size=128, class_weights=cw,weight_decay=0.000001)
+    clf.fit(x_train, y_train, iterations=500, batch_size=128, class_weights=cw, gamma=0.1,
+            stepsize=100, weight_decay=0.0001)
     y_pred = clf.predict(x_test)
     report = metrics.classification_report(y_test, y_pred)
     print(report)
