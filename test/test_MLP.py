@@ -6,6 +6,7 @@
 import os
 import pytest
 import numpy as np
+from scipy.sparse import csc_matrix, csr_matrix, coo_matrix
 from pydd.utils import os_utils
 from pydd.MLP import MLPfromArray, MLPfromSVM
 from sklearn import datasets, metrics, model_selection, preprocessing
@@ -37,7 +38,10 @@ class TestSVM(object):
             [{'X': train_path}, test_path, MLPfromSVM(**params)],
             [{'X': [train_path, test_path]}, test_path, MLPfromSVM(**params)],
             [{'X': x_train, 'Y': y_train}, x_test, MLPfromArray(**params)],
-            [{'X': x_train, 'Y': y_train, 'validation_data': [(x_test, y_test)]}, x_test, MLPfromArray(**params)]
+            [{'X': x_train, 'Y': y_train, 'validation_data': [(x_test, y_test)]}, x_test, MLPfromArray(**params)],
+            [{'X': csc_matrix(x_train), 'Y': y_train, 'validation_data': [(csc_matrix(x_test), y_test)]}, x_test, MLPfromArray(**params)],
+            [{'X': csr_matrix(x_train), 'Y': y_train, 'validation_data': [(csr_matrix(x_test), y_test)]}, x_test, MLPfromArray(**params)],
+            [{'X': coo_matrix(x_train), 'Y': y_train, 'validation_data': [(coo_matrix(x_test), y_test)]}, x_test, MLPfromArray(**params)],
         ]
 
         for fit_param, predict_params, clf in clfs:
