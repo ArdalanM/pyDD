@@ -9,6 +9,7 @@ import json
 import time
 import tempfile
 import numpy as np
+from scipy import sparse
 from sklearn.base import BaseEstimator
 from sklearn.datasets import dump_svmlight_file
 from pydd.utils import os_utils, time_utils
@@ -127,7 +128,7 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
             class_weights=None):
 
         self.filepaths = []
-        if type(X) == np.ndarray:
+        if type(X) == np.ndarray or sparse.issparse(X):
             train_f = os.path.join(self.data_folder, "x_train_{}.svm".format(time_utils.fulltimestamp()))
             dump_svmlight_file(X, Y, train_f)
             self.filepaths.append(train_f)
@@ -196,33 +197,50 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
                 print(train_status)
                 break
 
-    def _to_list_of_svm_strings(self, Xndarray):
-        list_svm_string = []
-        for i in range(Xndarray.shape[0]):
+    def _sparse_to_sparse_strings(self, X):
 
-            x = Xndarray[i, :]
+        X = sparse.coo_matrix(X)
+
+        list_svm_strings = []
+        for i in range(X.shape[0]):
+            row_sparse = X.getrow(i)
+
+            indexes = row_sparse.nonzero()[1]
+            values = row_sparse.data
+
+            svm_string = list(map(lambda idx_val: '{}:{}'.format(idx_val[0], idx_val[1]), zip(indexes, values)))
+            svm_string = ' '.join(svm_string)
+            list_svm_strings.append(svm_string)
+        return list_svm_strings
+
+    def _ndarray_to_sparse_strings(self, X):
+        list_svm_strings = []
+
+        for i in range(X.shape[0]):
+            x = X[i, :]
             indexes = x.nonzero()[0]
             values = x[indexes]
 
             # where the magic happen :)
             svm_string = list(map(lambda idx_val: '{}:{}'.format(idx_val[0], idx_val[1]), zip(indexes, values)))
             svm_string = ' '.join(svm_string)
-            list_svm_string.append(svm_string)
+            list_svm_strings.append(svm_string)
 
-        return list_svm_string
+        return list_svm_strings
 
     def predict_proba(self, X):
 
         data = [X]
         if type(X) == np.ndarray:
-            data = self._to_list_of_svm_strings(X)
+            data = self._ndarray_to_sparse_strings(X)
+        elif sparse.issparse(X):
+            data = self._sparse_to_sparse_strings(X)
 
         nclasses = self.service_parameters_mllib['nclasses']
         self.predict_parameters_input = {}
         self.predict_parameters_mllib = {"gpu": self.service_parameters_mllib['gpu'],
                                          "gpuid ": self.service_parameters_mllib['gpuid']}
         self.predict_parameters_output = {'best': nclasses}
-
 
         json_dump = self.post_predict(self.sname, data, self.predict_parameters_input,
                                       self.predict_parameters_mllib, self.predict_parameters_output)
