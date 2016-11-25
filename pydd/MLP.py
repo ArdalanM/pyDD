@@ -205,7 +205,7 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
         for row, col, data in zip(X.row, X.col, X.data):
             list_svm_strings[row] += "{}: {} ".format(col, data)
 
-        list_svm_strings = map(lambda x: x[:-1], list_svm_strings)
+        list_svm_strings = list(map(lambda x: x[:-1], list_svm_strings))
 
         return list_svm_strings
 
