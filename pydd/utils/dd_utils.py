@@ -5,6 +5,7 @@
 """
 import numpy as np
 from pydd.utils.dd_client import DD
+from scipy import sparse
 
 
 class AbstractDDCalls(object):
@@ -68,3 +69,30 @@ def to_array(json_dump, nclasses):
     return y_score
 
 
+def sparse_to_sparse_strings(X):
+
+    X = sparse.coo_matrix(X)
+
+    list_svm_strings = [""] * X.shape[0]
+    for row, col, data in zip(X.row, X.col, X.data):
+        list_svm_strings[row] += "{}:{} ".format(col, data)
+
+    list_svm_strings = list(map(lambda x: x[:-1], list_svm_strings))
+
+    return list_svm_strings
+
+
+def ndarray_to_sparse_strings(X):
+        list_svm_strings = []
+
+        for i in range(X.shape[0]):
+            x = X[i, :]
+            indexes = x.nonzero()[0]
+            values = x[indexes]
+
+            # where the magic happen :)
+            svm_string = list(map(lambda idx_val: '{}:{}'.format(idx_val[0], idx_val[1]), zip(indexes, values)))
+            svm_string = ' '.join(svm_string)
+            list_svm_strings.append(svm_string)
+
+        return list_svm_strings
