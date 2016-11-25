@@ -13,7 +13,10 @@ from scipy import sparse
 from sklearn.base import BaseEstimator
 from sklearn.datasets import dump_svmlight_file
 from pydd.utils import os_utils, time_utils
-from pydd.utils.dd_utils import AbstractDDCalls, to_array
+from pydd.utils.dd_utils import (AbstractDDCalls,
+                                 to_array,
+                                 ndarray_to_sparse_strings,
+                                 sparse_to_sparse_strings)
 
 
 class genericMLP(AbstractDDCalls, BaseEstimator):
@@ -197,13 +200,14 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
                 print(train_status)
                 break
 
+<<<<<<< HEAD
     def _sparse_to_sparse_strings(self, X):
 
         X = sparse.coo_matrix(X)
 
         list_svm_strings = [""] * X.shape[0]
         for row, col, data in zip(X.row, X.col, X.data):
-            list_svm_strings[row] += "{}: {} ".format(col, data)
+            list_svm_strings[row] += "{}:{} ".format(col, data)
 
         list_svm_strings = list(map(lambda x: x[:-1], list_svm_strings))
 
@@ -225,12 +229,15 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
         return list_svm_strings
 
     def predict_proba(self, X, batch_size=128):
+=======
+    def predict_proba(self, X):
+>>>>>>> 29e9b4e... refactor helper function
 
         data = [X]
         if type(X) == np.ndarray:
-            data = self._ndarray_to_sparse_strings(X)
+            data = ndarray_to_sparse_strings(X)
         elif sparse.issparse(X):
-            data = self._sparse_to_sparse_strings(X)
+            data = sparse_to_sparse_strings(X)
 
         nclasses = self.service_parameters_mllib['nclasses']
         self.predict_parameters_input = {}
