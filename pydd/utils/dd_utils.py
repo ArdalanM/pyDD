@@ -30,6 +30,11 @@ class AbstractDDCalls(object):
 
         return self
 
+    def delete_train(self, sname, job=1):
+
+        self.dd.delete_train(sname, job=job)
+        return self
+
     def post_predict(self, sname, data, predict_parameters_input, predict_parameters_mllib,
                      predict_parameters_output):
         json_dump = self.dd.post_predict(sname, data, predict_parameters_input,
