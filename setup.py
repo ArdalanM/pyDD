@@ -2,7 +2,7 @@ from setuptools import setup
 from setuptools import find_packages
 
 setup(name='pyDD',
-      version='0.0.2',
+      version='0.0.3',
       description='Python binding for DeepDetect',
       author='Ardalan MEHRANI',
       author_email='ardalan.mehrani@iosquare.com',
