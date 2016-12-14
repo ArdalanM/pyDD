@@ -37,7 +37,8 @@ class genericLR(AbstractDDCalls, BaseEstimator):
                  template='lregression',
                  regression=False,
                  finetuning=False,
-                 db=True):
+                 db=True,
+                 tmp_dir=None):
         self.host = host
         self.port = port
         self.sname = sname
@@ -54,6 +55,8 @@ class genericLR(AbstractDDCalls, BaseEstimator):
         self.regression = regression
         self.finetuning = finetuning
         self.db = db
+        self.tmp_dir = tmp_dir
+
 
         self.params = {
             'host': self.host,
@@ -94,7 +97,7 @@ class genericLR(AbstractDDCalls, BaseEstimator):
         else:
             self.delete_service(self.sname, "mem")
 
-        tmp_dir = tempfile.mkdtemp()
+        tmp_dir = tempfile.mkdtemp(prefix="pydd_", dir=self.tmp_dir)
         self.data_folder = "{}/data".format(tmp_dir)
         if self.model['repository'] == '':
             self.model['repository'] = "{}/model".format(tmp_dir)
@@ -252,7 +255,8 @@ class LRfromSVM(genericLR):
                  template='lregression',
                  regression=False,
                  finetuning=False,
-                 db=True):
+                 db=True,
+                 tmp_dir=None):
         super(LRfromSVM, self).__init__(host=host,
                                         port=port,
                                         sname=sname,
@@ -268,7 +272,8 @@ class LRfromSVM(genericLR):
                                         template=template,
                                         regression=regression,
                                         finetuning=finetuning,
-                                        db=db)
+                                        db=db,
+                                        tmp_dir=tmp_dir)
 
 
 class LRfromArray(genericLR):
@@ -287,7 +292,8 @@ class LRfromArray(genericLR):
                  template='lregression',
                  regression=False,
                  finetuning=False,
-                 db=True):
+                 db=True,
+                 tmp_dir=None):
         super(LRfromArray, self).__init__(host=host,
                                           port=port,
                                           sname=sname,
@@ -303,4 +309,5 @@ class LRfromArray(genericLR):
                                           template=template,
                                           regression=regression,
                                           finetuning=finetuning,
-                                          db=db)
+                                          db=db,
+                                          tmp_dir=tmp_dir)
