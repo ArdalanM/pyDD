@@ -9,10 +9,14 @@ import json
 import time
 import tempfile
 import numpy as np
+from scipy import sparse
 from sklearn.base import BaseEstimator
 from sklearn.datasets import dump_svmlight_file
 from pydd.utils import os_utils, time_utils
-from pydd.utils.dd_utils import AbstractDDCalls, to_array
+from pydd.utils.dd_utils import (AbstractDDCalls,
+                                 to_array,
+                                 ndarray_to_sparse_strings,
+                                 sparse_to_sparse_strings)
 
 
 class genericMLP(AbstractDDCalls, BaseEstimator):
@@ -34,7 +38,8 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
                  dropout=0.5,
                  regression=False,
                  finetuning=False,
-                 db=True):
+                 db=True,
+                 tmp_dir=None):
         self.host = host
         self.port = port
         self.sname = sname
@@ -54,6 +59,7 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
         self.regression = regression
         self.finetuning = finetuning
         self.db = db
+        self.tmp_dir = tmp_dir
 
         self.params = {
             'host': self.host,
@@ -98,7 +104,7 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
         else:
             self.delete_service(self.sname, "mem")
 
-        tmp_dir = tempfile.mkdtemp()
+        tmp_dir = tempfile.mkdtemp(prefix="pydd_", dir=self.tmp_dir)
         self.data_folder = "{}/data".format(tmp_dir)
         if self.model['repository'] == '':
             self.model['repository'] = "{}/model".format(tmp_dir)
@@ -120,13 +126,14 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
             momentum=None,
             weight_decay=None,
             power=None,
+            gamma=None,
             iter_size=1,
             batch_size=128,
             metrics=['mcll', 'accp'],
             class_weights=None):
 
         self.filepaths = []
-        if type(X) == np.ndarray:
+        if type(X) == np.ndarray or sparse.issparse(X):
             train_f = os.path.join(self.data_folder, "x_train_{}.svm".format(time_utils.fulltimestamp()))
             dump_svmlight_file(X, Y, train_f)
             self.filepaths.append(train_f)
@@ -158,6 +165,7 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
                        'momentum': momentum,
                        'weight_decay': weight_decay,
                        'power': power,
+                       'gamma': gamma,
                        'iter_size': iter_size},
             'net': {'batch_size': batch_size},
             'class_weights': class_weights if class_weights else [1.] * self.service_parameters_mllib['nclasses']
@@ -194,26 +202,13 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
                 print(train_status)
                 break
 
-    def _to_list_of_svm_strings(self, Xndarray):
-        list_svm_string = []
-        for i in range(Xndarray.shape[0]):
-
-            x = Xndarray[i, :]
-            indexes = x.nonzero()[0]
-            values = x[indexes]
-
-            # where the magic happen :)
-            svm_string = list(map(lambda idx_val: '{}:{}'.format(idx_val[0], idx_val[1]), zip(indexes, values)))
-            svm_string = ' '.join(svm_string)
-            list_svm_string.append(svm_string)
-
-        return list_svm_string
-
-    def predict_proba(self, X, batch_size=128):
+    def predict_proba(self, X, batch_size=64):
 
         data = [X]
         if type(X) == np.ndarray:
-            data = self._to_list_of_svm_strings(X)
+            data = ndarray_to_sparse_strings(X)
+        elif sparse.issparse(X):
+            data = sparse_to_sparse_strings(X)
 
         nclasses = self.service_parameters_mllib['nclasses']
         self.predict_parameters_input = {}
@@ -221,7 +216,6 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
                                          "gpuid ": self.service_parameters_mllib['gpuid'],
                                          'net': {'test_batch_size': batch_size}}
         self.predict_parameters_output = {'best': nclasses}
-
 
         json_dump = self.post_predict(self.sname, data, self.predict_parameters_input,
                                       self.predict_parameters_mllib, self.predict_parameters_output)
@@ -234,7 +228,7 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
 
         return y_score
 
-    def predict(self, X, batch_size=128):
+    def predict(self, X, batch_size=64):
 
         y_score = self.predict_proba(X, batch_size)
         return (np.argmax(y_score, 1)).reshape(len(y_score), 1)
@@ -269,7 +263,8 @@ class MLPfromSVM(genericMLP):
                  dropout=0.5,
                  regression=False,
                  finetuning=False,
-                 db=True):
+                 db=True,
+                 tmp_dir=None):
         super(MLPfromSVM, self).__init__(host=host,
                                          port=port,
                                          sname=sname,
@@ -288,7 +283,8 @@ class MLPfromSVM(genericMLP):
                                          dropout=dropout,
                                          regression=regression,
                                          finetuning=finetuning,
-                                         db=db)
+                                         db=db,
+                                         tmp_dir=tmp_dir)
 
 
 class MLPfromArray(genericMLP):
@@ -310,7 +306,8 @@ class MLPfromArray(genericMLP):
                  dropout=0.5,
                  regression=False,
                  finetuning=False,
-                 db=True):
+                 db=True,
+                 tmp_dir=None):
         super(MLPfromArray, self).__init__(host=host,
                                            port=port,
                                            sname=sname,
@@ -329,4 +326,5 @@ class MLPfromArray(genericMLP):
                                            dropout=dropout,
                                            regression=regression,
                                            finetuning=finetuning,
-                                           db=db)
+                                           db=db,
+                                           tmp_dir=tmp_dir)
