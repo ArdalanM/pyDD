@@ -209,7 +209,7 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
 
         return list_svm_string
 
-    def predict_proba(self, X):
+    def predict_proba(self, X, batch_size=128):
 
         data = [X]
         if type(X) == np.ndarray:
@@ -218,7 +218,8 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
         nclasses = self.service_parameters_mllib['nclasses']
         self.predict_parameters_input = {}
         self.predict_parameters_mllib = {"gpu": self.service_parameters_mllib['gpu'],
-                                         "gpuid ": self.service_parameters_mllib['gpuid']}
+                                         "gpuid ": self.service_parameters_mllib['gpuid'],
+                                         'net': {'test_batch_size': batch_size}}
         self.predict_parameters_output = {'best': nclasses}
 
 
@@ -233,9 +234,9 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
 
         return y_score
 
-    def predict(self, X):
+    def predict(self, X, batch_size=128):
 
-        y_score = self.predict_proba(X)
+        y_score = self.predict_proba(X, batch_size)
         return (np.argmax(y_score, 1)).reshape(len(y_score), 1)
 
     def get_params(self, deep=True):
