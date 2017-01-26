@@ -118,7 +118,7 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
         with open("{}/model.json".format(self.model['repository'])) as f:
             self.calls = [json.loads(line, encoding='utf-8') for line in f]
 
-    def fit(self, X, Y=None, validation_data=[], iterations=100, test_interval=None,
+    def fit(self, X, Y=None, validation_data=[], lmdb_paths=[], iterations=100, test_interval=None,
             solver_type='SGD',
             base_lr=0.1,
             lr_policy=None,
@@ -146,6 +146,13 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
 
         elif type(X) == list:
             self.filepaths = X
+            if lmdb_paths:
+                assert len(lmdb_paths) == len(X) <= 2
+                if len(lmdb_paths) == 2:
+                    os.symlink(lmdb_paths[0], os.path.join(self.data_folder, "train.lmdb"))
+                    os.symlink(lmdb_paths[1], os.path.join(self.data_folder, "test.lmdb"))
+                else:
+                    os.symlink(lmdb_paths[0], os.path.join(self.data_folder, "train.lmdb"))
         elif type(X) == str:
             self.filepaths = [X]
         else:
@@ -204,6 +211,7 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     def _sparse_to_sparse_strings(self, X):
 
         X = sparse.coo_matrix(X)
@@ -238,6 +246,9 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
 =======
     def predict_proba(self, X, batch_size=64):
 >>>>>>> 6b37c67... add test_batch_size on LR and MLP
+=======
+    def predict_proba(self, X):
+>>>>>>> e7eea61... MLP only: add lmdb_paths to fit method
 
         data = [X]
         if type(X) == np.ndarray:
@@ -248,8 +259,7 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
         nclasses = self.service_parameters_mllib['nclasses']
         self.predict_parameters_input = {}
         self.predict_parameters_mllib = {"gpu": self.service_parameters_mllib['gpu'],
-                                         "gpuid ": self.service_parameters_mllib['gpuid'],
-                                         'net': {'test_batch_size': batch_size}}
+                                         "gpuid ": self.service_parameters_mllib['gpuid']}
         self.predict_parameters_output = {'best': nclasses}
 
         json_dump = self.post_predict(self.sname, data, self.predict_parameters_input,
@@ -263,9 +273,9 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
 
         return y_score
 
-    def predict(self, X, batch_size=64):
+    def predict(self, X):
 
-        y_score = self.predict_proba(X, batch_size)
+        y_score = self.predict_proba(X)
         return (np.argmax(y_score, 1)).reshape(len(y_score), 1)
 
     def get_params(self, deep=True):
