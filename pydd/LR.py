@@ -166,7 +166,7 @@ class genericLR(AbstractDDCalls, BaseEstimator):
             'net': {
                 'batch_size': batch_size
             },
-            # 'class_weights': class_weights if class_weights else [1.] * self.service_parameters_mllib['nclasses']
+            'class_weights': class_weights if class_weights else [1.] * self.service_parameters_mllib['nclasses']
         }
 
         if self.n_fit > 0:
@@ -200,7 +200,7 @@ class genericLR(AbstractDDCalls, BaseEstimator):
                 print(train_status)
                 break
 
-    def predict_proba(self, X, batch_size=64):
+    def predict_proba(self, X):
 
         data = [X]
         if type(X) == np.ndarray:
@@ -211,8 +211,7 @@ class genericLR(AbstractDDCalls, BaseEstimator):
         nclasses = self.service_parameters_mllib['nclasses']
         self.predict_parameters_input = {}
         self.predict_parameters_mllib = {"gpu": self.service_parameters_mllib['gpu'],
-                                         "gpuid ": self.service_parameters_mllib['gpuid'],
-                                         'net': {'test_batch_size': batch_size}}
+                                         "gpuid ": self.service_parameters_mllib['gpuid']}
         self.predict_parameters_output = {'best': nclasses}
 
         json_dump = self.post_predict(self.sname, data, self.predict_parameters_input,
@@ -225,8 +224,8 @@ class genericLR(AbstractDDCalls, BaseEstimator):
 
         return y_score
 
-    def predict(self, X, batch_size=64):
-        y_score = self.predict_proba(X, batch_size)
+    def predict(self, X):
+        y_score = self.predict_proba(X)
         return (np.argmax(y_score, 1)).reshape(len(y_score), 1)
 
     def get_params(self, deep=True):
