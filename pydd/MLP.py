@@ -83,6 +83,7 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
             'finetuning': self.finetuning,
             'db': self.db,
         }
+        super(genericMLP, self).__init__(self.host, self.port)
 
         self.n_pred = 0
         self.n_fit = 0
@@ -108,7 +109,6 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
                                          'finetuning': self.finetuning, 'db': self.db}
         self.service_parameters_input = {'connector': self.connector}
         self.service_parameters_output = {}
-        super(genericMLP, self).__init__(self.host, self.port)
 
         json_dump = self.create_service(self.sname, self.model, self.description, self.mllib,
                                         self.service_parameters_input, self.service_parameters_mllib,
