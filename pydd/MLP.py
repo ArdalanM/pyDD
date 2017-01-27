@@ -212,6 +212,7 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     def _sparse_to_sparse_strings(self, X):
 
         X = sparse.coo_matrix(X)
@@ -249,6 +250,9 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
 =======
     def predict_proba(self, X):
 >>>>>>> e7eea61... MLP only: add lmdb_paths to fit method
+=======
+    def predict_proba(self, X, batch_size=128):
+>>>>>>> 088561f... add test_batch_size
 
         data = [X]
         if type(X) == np.ndarray:
@@ -259,7 +263,8 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
         nclasses = self.service_parameters_mllib['nclasses']
         self.predict_parameters_input = {}
         self.predict_parameters_mllib = {"gpu": self.service_parameters_mllib['gpu'],
-                                         "gpuid ": self.service_parameters_mllib['gpuid']}
+                                         "gpuid ": self.service_parameters_mllib['gpuid'],
+                                         'net': {'test_batch_size': batch_size}}
         self.predict_parameters_output = {'best': nclasses}
 
         json_dump = self.post_predict(self.sname, data, self.predict_parameters_input,
@@ -273,9 +278,9 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
 
         return y_score
 
-    def predict(self, X):
+    def predict(self, X, batch_size=128):
 
-        y_score = self.predict_proba(X)
+        y_score = self.predict_proba(X, batch_size)
         return (np.argmax(y_score, 1)).reshape(len(y_score), 1)
 
     def get_params(self, deep=True):

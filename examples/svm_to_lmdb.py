@@ -25,9 +25,7 @@ datasets.dump_svmlight_file(x_test, y_test, test_path)
 train_lmdb_path = lmdb_utils.create_lmdb_from_svm(train_path, os.path.abspath('train.lmdb'), port=8082, gpu=True)
 test_lmdb_path = lmdb_utils.create_lmdb_from_svm(test_path, os.path.abspath('test.lmdb'), port=8082, gpu=True)
 
-
+# Training model from lmdb data
 clf = MLPfromSVM(port=8082, nclasses=10, gpu=True)
-# clf.fit([train_path, test_path])
-
-
 clf.fit([train_path, test_path], lmdb_paths=[train_lmdb_path, test_lmdb_path])
+y = clf.predict_proba(train_path)
