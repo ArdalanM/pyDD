@@ -212,7 +212,7 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
 
         if lmdb_paths:
             os.remove(os.path.join(self.repository, "vocab.dat"))
-            os.symlink(vocab_path, os.path.join(self.repository, "vocab.dat"))
+            shutil.copy(vocab_path, os.path.join(self.repository, "vocab.dat"))
 
     def predict_proba(self, X, batch_size=128):
 
