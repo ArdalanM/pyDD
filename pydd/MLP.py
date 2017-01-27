@@ -104,6 +104,8 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
         else:
             self.delete_service(self.sname, "mem")
 
+
+
         tmp_dir = tempfile.mkdtemp(prefix="pydd_", dir=self.tmp_dir)
         self.data_folder = "{}/data".format(tmp_dir)
         if self.model['repository'] == '':
@@ -149,10 +151,10 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
             if lmdb_paths:
                 assert len(lmdb_paths) == len(X) <= 2
                 if len(lmdb_paths) == 2:
-                    os.symlink(lmdb_paths[0], os.path.join(self.data_folder, "train.lmdb"))
-                    os.symlink(lmdb_paths[1], os.path.join(self.data_folder, "test.lmdb"))
+                    os.symlink(lmdb_paths[0], os.path.join(self.repository, "train.lmdb"))
+                    os.symlink(lmdb_paths[1], os.path.join(self.repository, "test.lmdb"))
                 else:
-                    os.symlink(lmdb_paths[0], os.path.join(self.data_folder, "train.lmdb"))
+                    os.symlink(lmdb_paths[0], os.path.join(self.repository, "train.lmdb"))
         elif type(X) == str:
             self.filepaths = [X]
         else:
