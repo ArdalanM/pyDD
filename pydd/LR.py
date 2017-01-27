@@ -111,7 +111,7 @@ class genericLR(AbstractDDCalls, BaseEstimator):
         with open("{}/model.json".format(self.model['repository'])) as f:
             self.calls = [json.loads(line, encoding='utf-8') for line in f]
 
-    def fit(self, X, Y=None, validation_data=[], iterations=100,
+    def fit(self, X, Y=None, validation_data=[], lmdb_paths=[], iterations=100,
             test_interval=None,
             solver_type='SGD',
             base_lr=0.1,
@@ -140,6 +140,13 @@ class genericLR(AbstractDDCalls, BaseEstimator):
 
         elif type(X) == list:
             self.filepaths = X
+            if lmdb_paths:
+                assert len(lmdb_paths) == len(X) <= 2
+                if len(lmdb_paths) == 2:
+                    os.symlink(lmdb_paths[0], os.path.join(self.data_folder, "train.lmdb"))
+                    os.symlink(lmdb_paths[1], os.path.join(self.data_folder, "test.lmdb"))
+                else:
+                    os.symlink(lmdb_paths[0], os.path.join(self.data_folder, "train.lmdb"))
         elif type(X) == str:
             self.filepaths = [X]
         else:
