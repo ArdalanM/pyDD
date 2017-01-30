@@ -89,7 +89,7 @@ class XGBClassifier(AbstractDDCalls, BaseEstimator):
             'nclasses': self.nclasses,
             'ntargets': self.ntargets,
         }
-        super(XGB, self).__init__(self.host, self.port)
+        super(XGBClassifier, self).__init__(self.host, self.port)
 
         self.n_pred = 0
         self.n_fit = 0
@@ -264,7 +264,7 @@ if __name__ == "__main__":
         os.path.abspath("x_test.svm")
     ]
 
-    clf.fit(svm_f, nthread=10, iterations=1000)
+    clf.fit(svm_f, nthread=10, iterations=1000, metrics=['mcll', 'cmfull'])
 
     y = clf.predict_proba(svm_f[0])
 
