@@ -28,7 +28,7 @@ import uuid
 import datetime
 
 VERBOSE = False
-DD_TIMEOUT = 2000  # seconds, for long blocking training alls, as needed
+DD_TIMEOUT = 86400  # 24h (86400 sec) call maximum :)
 
 
 def LOG(msg):
