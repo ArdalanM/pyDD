@@ -8,6 +8,7 @@ import os
 import json
 import time
 import tempfile
+import numpy as np
 from scipy import sparse
 from sklearn.base import BaseEstimator
 from sklearn.datasets import dump_svmlight_file
@@ -248,7 +249,6 @@ class XGBClassifier(AbstractDDCalls, BaseEstimator):
 
 
 if __name__ == "__main__":
-    import numpy as np
 
     # Parameters
     seed = 1337
