@@ -58,13 +58,13 @@ class XGBClassifier(AbstractDDCalls, BaseEstimator):
     curl -X POST "http://localhost:8080/train" -d
     "{\"service\":\"testxgb\",\"async\":true,\"parameters\":{\"mllib\":{\"iterations\":100,\"test_interval\":10,\"objective\":\"binary:logistic\",\"booster_params\":{\"max_depth\":30}},\"input\":{},\"output\":{\"measure\":[\"auc\",\"mcll\",\"f1\"]}},\"data\":[\"/path/to/X_train.svm\",\"/path/to/X_test.svm\"]}"
     """
-    def __init__(self, host='localhost',
+    def __init__(self, host="localhost",
                  port=8080,
-                 sname='',
-                 description='',
-                 repository='',
-                 connector='svm',
-                 mllib='xgboost',
+                 sname="",
+                 description="",
+                 repository="",
+                 connector="svm",
+                 mllib="xgboost",
                  nclasses=2,
                  ntargets=None,
                  tmp_dir=None):
@@ -80,15 +80,15 @@ class XGBClassifier(AbstractDDCalls, BaseEstimator):
         self.tmp_dir = tmp_dir
 
         self.params = {
-            'host': self.host,
-            'port': self.port,
-            'sname': self.sname,
-            'mllib': self.mllib,
-            'description': self.description,
-            'repository': self.repository,
-            'connector': self.connector,
-            'nclasses': self.nclasses,
-            'ntargets': self.ntargets,
+            "host": self.host,
+            "port": self.port,
+            "sname": self.sname,
+            "mllib": self.mllib,
+            "description": self.description,
+            "repository": self.repository,
+            "connector": self.connector,
+            "nclasses": self.nclasses,
+            "ntargets": self.ntargets,
         }
         super(XGBClassifier, self).__init__(self.host, self.port)
 
@@ -107,9 +107,9 @@ class XGBClassifier(AbstractDDCalls, BaseEstimator):
             self.repository = tempfile.mkdtemp(prefix="pydd_", dir=self.tmp_dir)
             os_utils._create_dirs([self.repository])
 
-        self.model = {'repository': self.repository}
-        self.service_parameters_mllib = {'nclasses': self.nclasses, 'ntargets': self.ntargets}
-        self.service_parameters_input = {'connector': self.connector}
+        self.model = {"repository": self.repository}
+        self.service_parameters_mllib = {"nclasses": self.nclasses, "ntargets": self.ntargets}
+        self.service_parameters_input = {"connector": self.connector}
         self.service_parameters_output = {}
 
         json_dump = self.create_service(self.sname, self.model, self.description, self.mllib,
@@ -117,14 +117,13 @@ class XGBClassifier(AbstractDDCalls, BaseEstimator):
                                         self.service_parameters_output)
         self.answers.append(json_dump)
 
-        with open("{}/model.json".format(self.model['repository'])) as f:
-            self.calls = [json.loads(line, encoding='utf-8') for line in f]
-
+        with open("{}/model.json".format(self.model["repository"])) as f:
+            self.calls = [json.loads(line, encoding="utf-8") for line in f]
 
     def fit(self, X, Y=None, validation_data=[],
-            objective='multi:softprob',
-            booster='gbtree',
-            eval_metric='auc',
+            objective="multi:softprob",
+            booster="gbtree",
+            eval_metric="auc",
             base_score=0.5,
             seed=0,
             nthread=-1,
@@ -133,29 +132,29 @@ class XGBClassifier(AbstractDDCalls, BaseEstimator):
             save_period=0,
             eta=0.3, gamma=0., max_depth=6, min_child_weight=1, max_delta_step=0,
             subsample=1., colsample=1., lambda_reg=1., alpha_reg=0.,
-            lambda_bias=0.0, tree_method='auto',
-            metrics=['auc', 'acc']):
+            lambda_bias=0.0, tree_method="auto",
+            metrics=["auc", "acc"]):
 
-        self.booster_params = {'eta': eta, 'gamma': gamma, 'max_depth': max_depth,
-                               'min_child_weight': min_child_weight, 'max_delta_step': max_delta_step,
-                               'subsample': subsample, 'colsample': colsample,
-                               'lambda': lambda_reg, 'alpha': alpha_reg,
-                               'lambda_bias': lambda_bias, 'tree_method': tree_method}
+        self.booster_params = {"eta": eta, "gamma": gamma, "max_depth": max_depth,
+                               "min_child_weight": min_child_weight, "max_delta_step": max_delta_step,
+                               "subsample": subsample, "colsample": colsample,
+                               "lambda": lambda_reg, "alpha": alpha_reg,
+                               "lambda_bias": lambda_bias, "tree_method": tree_method}
 
         # df: True otherwise core dump when training on svm data
         self.train_parameters_input = {},
         self.train_parameters_output = {"measure": metrics},
         self.train_parameters_mllib = {
-            'objective': objective,
-            'booster': booster,
-            'nthread': nthread,
-            'eval_metric': eval_metric,
-            'base_score': base_score,
-            'seed': seed,
-            'iterations': iterations,
-            'test_interval': test_interval,
-            'save_period': save_period,
-            'booster_params': self.booster_params,
+            "objective": objective,
+            "booster": booster,
+            "nthread": nthread,
+            "eval_metric": eval_metric,
+            "base_score": base_score,
+            "seed": seed,
+            "iterations": iterations,
+            "test_interval": test_interval,
+            "save_period": save_period,
+            "booster_params": self.booster_params,
         }
 
         self.filepaths = []
@@ -179,8 +178,8 @@ class XGBClassifier(AbstractDDCalls, BaseEstimator):
 
         if self.n_fit > 0:
             self.delete_service(self.sname, "mem")
-            if 'template' in self.service_parameters_mllib:
-                self.service_parameters_mllib.pop('template')
+            if "template" in self.service_parameters_mllib:
+                self.service_parameters_mllib.pop("template")
 
             self.create_service(self.sname, self.model, self.description, self.mllib,
                                 self.service_parameters_input,
@@ -194,16 +193,16 @@ class XGBClassifier(AbstractDDCalls, BaseEstimator):
                                     self.train_parameters_output, async=True)
         time.sleep(1)
         self.answers.append(json_dump)
-        with open("{}/model.json".format(self.model['repository'])) as f:
-            self.calls = [json.loads(line, encoding='utf-8') for line in f]
+        with open("{}/model.json".format(self.model["repository"])) as f:
+            self.calls = [json.loads(line, encoding="utf-8") for line in f]
 
         self.n_fit += 1
 
-        train_status = ''
+        train_status = ""
         while True:
             train_status = self.get_train(self.sname, job=1, timeout=2)
-            if train_status['head']['status'] == 'running':
-                print(train_status['body']['measure'])
+            if train_status["head"]["status"] == "running":
+                print(train_status["body"]["measure"])
             else:
                 print(train_status)
                 break
@@ -216,17 +215,17 @@ class XGBClassifier(AbstractDDCalls, BaseEstimator):
         elif sparse.issparse(X):
             data = sparse_to_sparse_strings(X)
 
-        nclasses = self.service_parameters_mllib['nclasses']
+        nclasses = self.service_parameters_mllib["nclasses"]
         self.predict_parameters_input = {}
         self.predict_parameters_mllib = {}
-        self.predict_parameters_output = {'best': nclasses}
+        self.predict_parameters_output = {"best": nclasses}
 
         json_dump = self.post_predict(self.sname, data, self.predict_parameters_input,
                                       self.predict_parameters_mllib, self.predict_parameters_output)
 
         self.answers.append(json_dump)
-        with open("{}/model.json".format(self.model['repository'])) as f:
-            self.calls = [json.loads(line, encoding='utf-8') for line in f]
+        with open("{}/model.json".format(self.model["repository"])) as f:
+            self.calls = [json.loads(line, encoding="utf-8") for line in f]
 
         y_score = to_array(json_dump, nclasses)
 
@@ -254,8 +253,8 @@ if __name__ == "__main__":
     seed = 1337
     np.random.seed(seed)  # for reproducibility
     n_classes = 10
-    params = {'port': 8085, 'nclasses': n_classes}
-    split_params = {'test_size': 0.2, 'random_state': seed}
+    params = {"port": 8085, "nclasses": n_classes}
+    split_params = {"test_size": 0.2, "random_state": seed}
 
     clf = XGBClassifier(**params)
 
@@ -264,7 +263,7 @@ if __name__ == "__main__":
         os.path.abspath("x_test.svm")
     ]
 
-    clf.fit(svm_f, nthread=10, iterations=1000, metrics=['mcll', 'cmfull'])
+    clf.fit(svm_f, nthread=10, iterations=1000, metrics=["mcll", "cmfull"])
 
     y = clf.predict_proba(svm_f[0])
 
