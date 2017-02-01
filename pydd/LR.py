@@ -3,13 +3,12 @@
 @author: Ardalan MEHRANI <ardalan77400@gmail.com>
 @brief:
 """
-
+import os
 import json
 import time
-
-import numpy as np
-import os
+import shutil
 import tempfile
+import numpy as np
 from scipy import sparse
 from sklearn.base import BaseEstimator
 from sklearn.datasets import dump_svmlight_file
@@ -76,11 +75,22 @@ class genericLR(AbstractDDCalls, BaseEstimator):
             'finetuning': self.finetuning,
             'db': self.db,
         }
-
+        super(genericLR, self).__init__(self.host, self.port)
         self.n_pred = 0
         self.n_fit = 0
         self.calls = []
         self.answers = []
+
+        if self.sname:
+            self.delete_service(self.sname, "mem")
+        else:
+            self.sname = "pyDD_lr_{}".format(time_utils.fulltimestamp())
+            self.description = self.sname
+
+        if not self.repository:
+            self.repository = tempfile.mkdtemp(prefix="pydd_", dir=self.tmp_dir)
+            os_utils._create_dirs([self.repository])
+
         self.model = {'templates': self.templates, 'repository': self.repository}
         self.service_parameters_mllib = {'nclasses': self.nclasses, 'ntargets': self.ntargets,
                                          'gpu': self.gpu, 'gpuid': self.gpuid,
@@ -89,19 +99,6 @@ class genericLR(AbstractDDCalls, BaseEstimator):
                                          'finetuning': self.finetuning, 'db': self.db}
         self.service_parameters_input = {'connector': self.connector}
         self.service_parameters_output = {}
-        super(genericLR, self).__init__(self.host, self.port)
-
-        if self.sname == '':
-            self.sname = "pyDD_MLP_{}".format(time_utils.fulltimestamp())
-            self.description = self.sname
-        else:
-            self.delete_service(self.sname, "mem")
-
-        tmp_dir = tempfile.mkdtemp(prefix="pydd_", dir=self.tmp_dir)
-        self.data_folder = "{}/data".format(tmp_dir)
-        if self.model['repository'] == '':
-            self.model['repository'] = "{}/model".format(tmp_dir)
-        os_utils._create_dirs([self.model['repository'], self.data_folder])
 
         json_dump = self.create_service(self.sname, self.model, self.description, self.mllib,
                                         self.service_parameters_input, self.service_parameters_mllib,
@@ -111,7 +108,7 @@ class genericLR(AbstractDDCalls, BaseEstimator):
         with open("{}/model.json".format(self.model['repository'])) as f:
             self.calls = [json.loads(line, encoding='utf-8') for line in f]
 
-    def fit(self, X, Y=None, validation_data=[], lmdb_paths=[], iterations=100,
+    def fit(self, X, Y=None, validation_data=[], lmdb_paths=[], vocab_path="", iterations=100,
             test_interval=None,
             solver_type='SGD',
             base_lr=0.1,
@@ -141,6 +138,7 @@ class genericLR(AbstractDDCalls, BaseEstimator):
         elif type(X) == list:
             self.filepaths = X
             if lmdb_paths:
+                assert os.path.exists(vocab_path)
                 assert len(lmdb_paths) == len(X) <= 2
                 if len(lmdb_paths) == 2:
                     os.symlink(lmdb_paths[0], os.path.join(self.repository, "train.lmdb"))
@@ -206,6 +204,10 @@ class genericLR(AbstractDDCalls, BaseEstimator):
             else:
                 print(train_status)
                 break
+
+        if lmdb_paths:
+            os.remove(os.path.join(self.repository, "vocab.dat"))
+            shutil.copy(vocab_path, os.path.join(self.repository, "vocab.dat"))
 
     def predict_proba(self, X, batch_size=128):
 
