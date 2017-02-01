@@ -21,21 +21,21 @@ from pydd.utils.dd_utils import (AbstractDDCalls,
 
 
 class genericMLP(AbstractDDCalls, BaseEstimator):
-    def __init__(self, host='localhost',
+    def __init__(self, host="localhost",
                  port=8080,
-                 sname='',
-                 mllib='caffe',
-                 description='',
-                 repository='',
-                 templates='../templates/caffe',
-                 connector='svm',
+                 sname="",
+                 mllib="caffe",
+                 description="",
+                 repository="",
+                 templates="../templates/caffe",
+                 connector="svm",
                  nclasses=None,
                  ntargets=None,
                  gpu=False,
                  gpuid=0,
-                 template='mlp',
+                 template="mlp",
                  layers=[50],
-                 activation='relu',
+                 activation="relu",
                  dropout=0.5,
                  regression=False,
                  finetuning=False,
@@ -63,25 +63,25 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
         self.tmp_dir = tmp_dir
 
         self.params = {
-            'host': self.host,
-            'port': self.port,
-            'sname': self.sname,
-            'mllib': self.mllib,
-            'description': self.description,
-            'repository': self.repository,
-            'templates': self.templates,
-            'connector': self.connector,
-            'nclasses': self.nclasses,
-            'ntargets': self.ntargets,
-            'gpu': self.gpu,
-            'gpuid': self.gpuid,
-            'template': self.template,
-            'layers': self.layers,
-            'activation': self.activation,
-            'dropout': self.dropout,
-            'regression': self.regression,
-            'finetuning': self.finetuning,
-            'db': self.db,
+            "host": self.host,
+            "port": self.port,
+            "sname": self.sname,
+            "mllib": self.mllib,
+            "description": self.description,
+            "repository": self.repository,
+            "templates": self.templates,
+            "connector": self.connector,
+            "nclasses": self.nclasses,
+            "ntargets": self.ntargets,
+            "gpu": self.gpu,
+            "gpuid": self.gpuid,
+            "template": self.template,
+            "layers": self.layers,
+            "activation": self.activation,
+            "dropout": self.dropout,
+            "regression": self.regression,
+            "finetuning": self.finetuning,
+            "db": self.db,
         }
         super(genericMLP, self).__init__(self.host, self.port)
 
@@ -100,14 +100,14 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
             self.repository = tempfile.mkdtemp(prefix="pydd_", dir=self.tmp_dir)
             os_utils._create_dirs([self.repository])
 
-        self.model = {'templates': self.templates, 'repository': self.repository}
-        self.service_parameters_mllib = {'nclasses': self.nclasses, 'ntargets': self.ntargets,
-                                         'gpu': self.gpu, 'gpuid': self.gpuid,
-                                         'template': self.template, 'layers': self.layers,
-                                         'activation': self.activation,
-                                         'dropout': self.dropout, 'regression': self.regression,
-                                         'finetuning': self.finetuning, 'db': self.db}
-        self.service_parameters_input = {'connector': self.connector}
+        self.model = {"templates": self.templates, "repository": self.repository}
+        self.service_parameters_mllib = {"nclasses": self.nclasses, "ntargets": self.ntargets,
+                                         "gpu": self.gpu, "gpuid": self.gpuid,
+                                         "template": self.template, "layers": self.layers,
+                                         "activation": self.activation,
+                                         "dropout": self.dropout, "regression": self.regression,
+                                         "finetuning": self.finetuning, "db": self.db}
+        self.service_parameters_input = {"connector": self.connector}
         self.service_parameters_output = {}
 
         json_dump = self.create_service(self.sname, self.model, self.description, self.mllib,
@@ -115,11 +115,11 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
                                         self.service_parameters_output)
         self.answers.append(json_dump)
 
-        with open("{}/model.json".format(self.model['repository'])) as f:
-            self.calls = [json.loads(line, encoding='utf-8') for line in f]
+        with open("{}/model.json".format(self.model["repository"])) as f:
+            self.calls = [json.loads(line, encoding="utf-8") for line in f]
 
-    def fit(self, X, Y=None, validation_data=[], lmdb_paths=[], vocab_path='', iterations=100, test_interval=None,
-            solver_type='SGD',
+    def fit(self, X, Y=None, validation_data=[], lmdb_paths=[], vocab_path="", iterations=100, test_interval=None,
+            solver_type="SGD",
             base_lr=0.1,
             lr_policy=None,
             stepsize=None,
@@ -129,7 +129,7 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
             gamma=None,
             iter_size=1,
             batch_size=128,
-            metrics=['mcll', 'accp'],
+            metrics=["mcll", "accp"],
             class_weights=None):
 
         self.filepaths = []
@@ -160,29 +160,29 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
             raise
 
         # df: True otherwise core dump when training on svm data
-        self.train_parameters_input = {'db': True},
+        self.train_parameters_input = {"db": True},
         self.train_parameters_output = {"measure": metrics},
         self.train_parameters_mllib = {
-            'gpu': self.service_parameters_mllib['gpu'],
-            'solver': {'iterations': iterations,
-                       'test_interval': test_interval,
-                       'base_lr': base_lr,
-                       'solver_type': solver_type,
-                       'lr_policy': lr_policy,
-                       'stepsize': stepsize,
-                       'momentum': momentum,
-                       'weight_decay': weight_decay,
-                       'power': power,
-                       'gamma': gamma,
-                       'iter_size': iter_size},
-            'net': {'batch_size': batch_size},
-            'class_weights': class_weights if class_weights else [1.] * self.service_parameters_mllib['nclasses']
+            "gpu": self.service_parameters_mllib["gpu"],
+            "solver": {"iterations": iterations,
+                       "test_interval": test_interval,
+                       "base_lr": base_lr,
+                       "solver_type": solver_type,
+                       "lr_policy": lr_policy,
+                       "stepsize": stepsize,
+                       "momentum": momentum,
+                       "weight_decay": weight_decay,
+                       "power": power,
+                       "gamma": gamma,
+                       "iter_size": iter_size},
+            "net": {"batch_size": batch_size},
+            "class_weights": class_weights if class_weights else [1.] * self.service_parameters_mllib["nclasses"]
         }
 
         if self.n_fit > 0:
             self.delete_service(self.sname, "mem")
-            if 'template' in self.service_parameters_mllib:
-                self.service_parameters_mllib.pop('template')
+            if "template" in self.service_parameters_mllib:
+                self.service_parameters_mllib.pop("template")
 
             self.create_service(self.sname, self.model, self.description, self.mllib,
                                 self.service_parameters_input,
@@ -196,16 +196,16 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
                                     self.train_parameters_output, async=True)
         time.sleep(1)
         self.answers.append(json_dump)
-        with open("{}/model.json".format(self.model['repository'])) as f:
-            self.calls = [json.loads(line, encoding='utf-8') for line in f]
+        with open("{}/model.json".format(self.model["repository"])) as f:
+            self.calls = [json.loads(line, encoding="utf-8") for line in f]
 
         self.n_fit += 1
 
-        train_status = ''
+        train_status = ""
         while True:
             train_status = self.get_train(self.sname, job=1, timeout=2)
-            if train_status['head']['status'] == 'running':
-                print(train_status['body']['measure'])
+            if train_status["head"]["status"] == "running":
+                print(train_status["body"]["measure"])
             else:
                 print(train_status)
                 break
@@ -268,19 +268,19 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
         elif sparse.issparse(X):
             data = sparse_to_sparse_strings(X)
 
-        nclasses = self.service_parameters_mllib['nclasses']
+        nclasses = self.service_parameters_mllib["nclasses"]
         self.predict_parameters_input = {}
-        self.predict_parameters_mllib = {"gpu": self.service_parameters_mllib['gpu'],
-                                         "gpuid ": self.service_parameters_mllib['gpuid'],
-                                         'net': {'test_batch_size': batch_size}}
-        self.predict_parameters_output = {'best': nclasses}
+        self.predict_parameters_mllib = {"gpu": self.service_parameters_mllib["gpu"],
+                                         "gpuid ": self.service_parameters_mllib["gpuid"],
+                                         "net": {"test_batch_size": batch_size}}
+        self.predict_parameters_output = {"best": nclasses}
 
         json_dump = self.post_predict(self.sname, data, self.predict_parameters_input,
                                       self.predict_parameters_mllib, self.predict_parameters_output)
 
         self.answers.append(json_dump)
-        with open("{}/model.json".format(self.model['repository'])) as f:
-            self.calls = [json.loads(line, encoding='utf-8') for line in f]
+        with open("{}/model.json".format(self.model["repository"])) as f:
+            self.calls = [json.loads(line, encoding="utf-8") for line in f]
 
         y_score = to_array(json_dump, nclasses)
 
@@ -303,21 +303,21 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
 
 
 class MLPfromSVM(genericMLP):
-    def __init__(self, host='localhost',
+    def __init__(self, host="localhost",
                  port=8080,
-                 sname='',
-                 mllib='caffe',
-                 description='',
-                 repository='',
-                 templates='../templates/caffe',
-                 connector='svm',
+                 sname="",
+                 mllib="caffe",
+                 description="",
+                 repository="",
+                 templates="../templates/caffe",
+                 connector="svm",
                  nclasses=None,
                  ntargets=None,
                  gpu=False,
                  gpuid=0,
-                 template='mlp',
+                 template="mlp",
                  layers=[50],
-                 activation='relu',
+                 activation="relu",
                  dropout=0.5,
                  regression=False,
                  finetuning=False,
@@ -346,21 +346,21 @@ class MLPfromSVM(genericMLP):
 
 
 class MLPfromArray(genericMLP):
-    def __init__(self, host='localhost',
+    def __init__(self, host="localhost",
                  port=8080,
-                 sname='',
-                 mllib='caffe',
-                 description='',
-                 repository='',
-                 templates='../templates/caffe',
-                 connector='svm',
+                 sname="",
+                 mllib="caffe",
+                 description="",
+                 repository="",
+                 templates="../templates/caffe",
+                 connector="svm",
                  nclasses=None,
                  ntargets=None,
                  gpu=False,
                  gpuid=0,
-                 template='mlp',
+                 template="mlp",
                  layers=[50],
-                 activation='relu',
+                 activation="relu",
                  dropout=0.5,
                  regression=False,
                  finetuning=False,
