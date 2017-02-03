@@ -125,13 +125,13 @@ class genericLR(AbstractDDCalls, BaseEstimator):
 
         self.filepaths = []
         if type(X) == np.ndarray or sparse.issparse(X):
-            train_f = os.path.join(self.data_folder, "x_train_{}.svm".format(time_utils.fulltimestamp()))
+            train_f = os.path.join(self.repository, "x_train_{}.svm".format(time_utils.fulltimestamp()))
             dump_svmlight_file(X, Y, train_f)
             self.filepaths.append(train_f)
 
             if len(validation_data) > 0:
                 for i, (x_val, y_val) in enumerate(validation_data):
-                    valid_f = os.path.join(self.data_folder, "x_val{}_{}.svm".format(i, time_utils.fulltimestamp()))
+                    valid_f = os.path.join(self.repository, "x_val{}_{}.svm".format(i, time_utils.fulltimestamp()))
                     dump_svmlight_file(x_val, y_val, valid_f)
                     self.filepaths.append(valid_f)
 
