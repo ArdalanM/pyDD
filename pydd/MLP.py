@@ -130,7 +130,9 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
             iter_size=1,
             batch_size=128,
             metrics=["mcll", "accp"],
-            class_weights=None):
+            class_weights=None,
+            async=True,
+            display_metric_interval=1):
 
         self.filepaths = []
         if type(X) == np.ndarray or sparse.issparse(X):
@@ -193,7 +195,7 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
                                     self.filepaths,
                                     self.train_parameters_input,
                                     self.train_parameters_mllib,
-                                    self.train_parameters_output, async=True)
+                                    self.train_parameters_output, async=async)
         time.sleep(1)
         self.answers.append(json_dump)
         with open("{}/model.json".format(self.model["repository"])) as f:
@@ -201,14 +203,18 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
 
         self.n_fit += 1
 
-        train_status = ""
-        while True:
-            train_status = self.get_train(self.sname, job=1, timeout=2)
-            if train_status["head"]["status"] == "running":
-                print(train_status["body"]["measure"])
-            else:
-                print(train_status)
-                break
+        if async:
+            self.train_logs = []
+            train_status = ""
+            while True:
+                train_status = self.get_train(self.sname, job=1, timeout=display_metric_interval)
+                if train_status["head"]["status"] == "running":
+                    train_logs = train_status["body"]["measure"]
+                    self.train_logs.append(train_logs)
+                    print(train_logs)
+                else:
+                    print(train_status)
+                    break
 
 <<<<<<< HEAD
 <<<<<<< HEAD
