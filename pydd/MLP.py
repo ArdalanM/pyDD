@@ -89,6 +89,7 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
         self.n_fit = 0
         self.calls = []
         self.answers = []
+        self.train_logs = None
 
         if self.sname:
             self.delete_service(self.sname, "mem")
@@ -219,6 +220,7 @@ class genericMLP(AbstractDDCalls, BaseEstimator):
         if lmdb_paths:
             os.remove(os.path.join(self.repository, "vocab.dat"))
             shutil.copy(vocab_path, os.path.join(self.repository, "vocab.dat"))
+        return self.train_logs
 
     def predict_proba(self, X, batch_size=128):
 
