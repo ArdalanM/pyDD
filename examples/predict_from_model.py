@@ -36,7 +36,11 @@ datasets.dump_svmlight_file(x_train, y_train, train_path)
 datasets.dump_svmlight_file(x_test, y_test, test_path)
 
 # Create model, make sure the sname is not used by the server
-clf_svm = MLPfromSVM(sname=snames[0], repository=model_repo[0], **params)
+clf_svm = MLPfromSVM(repository="/data/sharedData/prod-affinitas/models/dd_models/test_yassine", port=8082, nclasses=2,
+                     finetuning=True, template=None, gpu=True)
+clf_svm.predict_proba("/data/ardalan.mehrani/ioSquare/prod-affinitas/data/output/01-02-full_c@31551_y@2_seed@1337/val_r@1318499_c@31551_y@2_seed@1337.svm")
+
+
 clf_array = MLPfromArray(sname=snames[1], repository=model_repo[1], **params)
 
 clf_svm.fit([train_path, test_path], iterations=1000, test_interval=10)
