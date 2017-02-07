@@ -31,8 +31,8 @@ datasets.dump_svmlight_file(x_test, y_test, test_path)
 
 clf = XGBClassifier(port=8085, nclasses=n_classes)
 
-booster_params = {"max_depth": 10, "subsample": 0.8, "eta": 0.3}
-clf.fit([train_path, test_path], booster="gbtree", iterations=20, **booster_params)
+booster_params = {"max_depth": 10, "subsample": 0.8, "eta": 0.3, "drop_rate": 0.4, "skip_drop": 0.4}
+clf.fit([train_path, test_path], booster="dart", iterations=20, **booster_params)
 
 y_test_prob = clf.predict_proba(test_path)
 y_test_pred = y_test_prob.argmax(-1)
