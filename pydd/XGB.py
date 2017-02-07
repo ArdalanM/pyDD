@@ -130,18 +130,7 @@ class XGBClassifier(AbstractDDCalls, BaseEstimator):
             iterations=10,
             test_interval=1,
             save_period=0,
-            eta=0.3, gamma=0., max_depth=6, min_child_weight=1, max_delta_step=0,
-            subsample=1., colsample=1., lambda_reg=1., alpha_reg=0.,
-            lambda_bias=0.0, tree_method="auto", grow_policy="depthwise", scale_pos_weight=1.,
-            metrics=["auc", "acc"]):
-
-        self.booster_params = {"eta": eta, "gamma": gamma, "max_depth": max_depth,
-                               "min_child_weight": min_child_weight, "max_delta_step": max_delta_step,
-                               "subsample": subsample, "colsample": colsample,
-                               "lambda": lambda_reg, "alpha": alpha_reg,
-                               "lambda_bias": lambda_bias, "tree_method": tree_method,
-                               "grow_policy": grow_policy,
-                               "scale_pos_weight": scale_pos_weight}
+            metrics=["auc", "acc"], **booster_params):
 
         # df: True otherwise core dump when training on svm data
         self.train_parameters_input = {},
@@ -156,7 +145,7 @@ class XGBClassifier(AbstractDDCalls, BaseEstimator):
             "iterations": iterations,
             "test_interval": test_interval,
             "save_period": save_period,
-            "booster_params": self.booster_params,
+            "booster_params": booster_params,
         }
 
         self.filepaths = []
