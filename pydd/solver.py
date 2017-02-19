@@ -3,21 +3,6 @@
 @author: Ardalan MEHRANI <ardalan77400@gmail.com>
 @brief:
 """
-import os
-import json
-import time
-import shutil
-import tempfile
-import numpy as np
-from scipy import sparse
-from sklearn.base import BaseEstimator
-from sklearn.datasets import dump_svmlight_file
-
-from pydd.utils import os_utils, time_utils
-from pydd.utils.dd_utils import (AbstractDDCalls,
-                                 to_array,
-                                 ndarray_to_sparse_strings,
-                                 sparse_to_sparse_strings)
 
 
 class GenericSolver(object):
@@ -55,22 +40,3 @@ class GenericSolver(object):
         self.weight_decay = weight_decay
         self.power = power
         self.iter_size = iter_size
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

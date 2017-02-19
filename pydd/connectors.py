@@ -32,8 +32,9 @@ class SVMConnector(Connectors):
 
 class ArrayConnector(Connectors):
 
-    def __init__(self, X, Y):
+    def __init__(self, X, Y=None):
         self.name = "array"
+
         super(ArrayConnector, self).__init__(X, Y)
 
 
