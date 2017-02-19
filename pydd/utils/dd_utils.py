@@ -60,7 +60,7 @@ def to_array(json_dump, nclasses):
     nb_rows = len(json_dump['body']['predictions'])
     nb_col = nclasses
 
-    y_score = np.zeros((nb_rows, nb_col))
+    y_score = np.zeros((nb_rows, nb_col), dtype=np.float32)
 
     for i, row in enumerate(json_dump['body']['predictions']):
         row_number = int(row['uri'])
@@ -80,7 +80,8 @@ def sparse_to_sparse_strings(X):
 
     list_svm_strings = [""] * X.shape[0]
     for row, col, data in zip(X.row, X.col, X.data):
-        list_svm_strings[row] += "{}:{} ".format(col, data)
+        # ".16g" is the precision of `dump_svmlight_file` function. We need to respect the same precision
+        list_svm_strings[row] += "{}:{:.16g} ".format(col, data)
 
     list_svm_strings = list(map(lambda x: x[:-1], list_svm_strings))
 
@@ -96,8 +97,9 @@ def ndarray_to_sparse_strings(X):
             values = x[indexes]
 
             # where the magic happen :)
-            svm_string = list(map(lambda idx_val: '{}:{}'.format(idx_val[0], idx_val[1]), zip(indexes, values)))
-            svm_string = ' '.join(svm_string)
+            # ".16g" is the precision of `dump_svmlight_file` function. We need to respect the same precision
+            svm_string = list(map(lambda idx_val: "{}:{:.16g}".format(idx_val[0], idx_val[1]), zip(indexes, values)))
+            svm_string = " ".join(svm_string)
             list_svm_strings.append(svm_string)
 
         return list_svm_strings
