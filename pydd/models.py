@@ -5,12 +5,17 @@
 """
 
 import os
+import json
 import shutil
-from scipy import sparse
-from sklearn.datasets import dump_svmlight_file
-from pydd.utils import time_utils
+import tempfile
+import numpy as np
+from pydd.utils import time_utils, os_utils
 from pydd.core import AbstractMLP, AbstractXGB
 from pydd.utils.dd_utils import ndarray_to_sparse_strings, sparse_to_sparse_strings
+
+from scipy import sparse
+from sklearn.base import BaseEstimator
+from sklearn.datasets import dump_svmlight_file
 
 
 class XGB(AbstractXGB):
@@ -176,7 +181,10 @@ class XGB(AbstractXGB):
         return self.train_logs
 
 
-class MLP(AbstractMLP):
+class MLP(AbstractMLP, BaseEstimator):
+    """
+
+    """
     def __init__(self, host="localhost",
                  port=8080,
                  sname="",
@@ -288,7 +296,7 @@ class MLP(AbstractMLP):
         self.predict_parameters_output = {"best": nclasses}
 
         if connector.name == "svm":
-            data = connector.data
+            data = connector.paths
 
         elif connector.name == "array":
             if type(connector.X) == np.ndarray:
@@ -309,10 +317,13 @@ class MLP(AbstractMLP):
 
 
 if __name__ == "__main__":
+    """
+    Simple unit test
+    """
     import numpy as np
-    from pydd.Solver import GenericSolver
+    from pydd.solver import GenericSolver
     from sklearn import datasets, model_selection, preprocessing
-    from pydd.Connectors import SVMConnector, ArrayConnector
+    from pydd.connectors import SVMConnector, ArrayConnector
 
     # Parameters
     seed = 1337

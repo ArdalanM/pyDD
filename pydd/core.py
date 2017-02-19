@@ -5,17 +5,12 @@
 """
 
 import os
-import shutil
 import json
 import time
 import tempfile
-import numpy as np
-from scipy import sparse
-from sklearn.base import BaseEstimator
-from sklearn.datasets import dump_svmlight_file
-from pydd.utils import os_utils, time_utils
+from pydd.utils import time_utils, os_utils
 from pydd.utils.dd_client import DD
-from pydd.utils.dd_utils import to_array, ndarray_to_sparse_strings, sparse_to_sparse_strings
+from pydd.utils.dd_utils import to_array
 
 
 class AbstractDDCalls(object):
