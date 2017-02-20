@@ -5,7 +5,7 @@
 """
 import os
 from pydd.utils import os_utils
-from pydd.MLP import MLPfromSVM, MLPfromArray
+from pydd.models import MLPfromSVM, MLPfromArray
 from sklearn import datasets, preprocessing, model_selection, metrics
 
 
