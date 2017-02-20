@@ -2,6 +2,30 @@
 """
 @author: Ardalan MEHRANI <ardalan77400@gmail.com>
 @brief:
+
+
+
+        self.params = {
+            "host": self.host,
+            "port": self.port,
+            "sname": self.sname,
+            "mllib": self.mllib,
+            "description": self.description,
+            "repository": self.repository,
+            "templates": self.templates,
+            "connector": self.connector,
+            "nclasses": self.nclasses,
+            "ntargets": self.ntargets,
+            "gpu": self.gpu,
+            "gpuid": self.gpuid,
+            "template": self.template,
+            "layers": self.layers,
+            "activation": self.activation,
+            "dropout": self.dropout,
+            "regression": self.regression,
+            "finetuning": self.finetuning,
+            "db": self.db,
+        }
 """
 
 import os
@@ -58,102 +82,49 @@ class AbstractDDCalls(object):
         return json_dump
 
 
-class AbstractMLP(AbstractDDCalls):
-    def __init__(self, host="localhost",
-                 port=8080,
-                 sname="",
-                 mllib="caffe",
-                 description="",
-                 repository="",
-                 templates="../templates/caffe",
-                 connector="svm",
-                 nclasses=None,
-                 ntargets=None,
-                 gpu=False,
-                 gpuid=0,
-                 template="mlp",
-                 layers=[50],
-                 activation="relu",
-                 dropout=0.5,
-                 regression=False,
-                 finetuning=False,
-                 db=True,
+class AbstractModels(AbstractDDCalls):
+    def __init__(self, host="localhost", port=8080, sname="", description="", mllib="caffe",
+                 service_parameters_input=None,
+                 service_parameters_mllib=None,
+                 service_parameters_output=None,
+                 model=None,
                  tmp_dir=None):
 
         self.host = host
         self.port = port
         self.sname = sname
-        self.mllib = mllib
+        self.model = model
         self.description = description
-        self.repository = repository
-        self.templates = templates
-        self.connector = connector
-        self.nclasses = nclasses
-        self.ntargets = ntargets
-        self.gpu = gpu
-        self.gpuid = gpuid
-        self.template = template
-        self.layers = layers
-        self.activation = activation
-        self.dropout = dropout
-        self.regression = regression
-        self.finetuning = finetuning
-        self.db = db
+        self.mllib = mllib
         self.tmp_dir = tmp_dir
 
-        self.params = {
-            "host": self.host,
-            "port": self.port,
-            "sname": self.sname,
-            "mllib": self.mllib,
-            "description": self.description,
-            "repository": self.repository,
-            "templates": self.templates,
-            "connector": self.connector,
-            "nclasses": self.nclasses,
-            "ntargets": self.ntargets,
-            "gpu": self.gpu,
-            "gpuid": self.gpuid,
-            "template": self.template,
-            "layers": self.layers,
-            "activation": self.activation,
-            "dropout": self.dropout,
-            "regression": self.regression,
-            "finetuning": self.finetuning,
-            "db": self.db,
-        }
-        super(AbstractMLP, self).__init__(self.host, self.port)
+        self.service_parameters_input = service_parameters_input
+        self.service_parameters_mllib = service_parameters_mllib
+        self.service_parameters_output = service_parameters_output
 
         self.n_pred = 0
         self.n_fit = 0
         self.calls = []
         self.answers = []
         self.train_logs = None
+        super(AbstractModels, self).__init__(self.host, self.port)
 
         if self.sname:
             self.delete_service(self.sname, "mem")
         else:
-            self.sname = "pyDD_{}_{}".format(self.template, time_utils.fulltimestamp())
+            self.sname = "pyDD_{}".format(time_utils.fulltimestamp())
             self.description = self.sname
 
-        if not self.repository:
-            self.repository = tempfile.mkdtemp(prefix="pydd_", dir=self.tmp_dir)
-            os_utils._create_dirs([self.repository])
-
-        self.service_parameters_input = {"connector": self.connector}
-        self.service_parameters_output = {}
-
-        self.model = {"templates": self.templates, "repository": self.repository}
-        self.service_parameters_mllib = {"nclasses": self.nclasses, "ntargets": self.ntargets,
-                                         "template": self.template, "layers": self.layers,
-                                         "gpu": self.gpu, "activation": self.activation,
-                                         "dropout": self.dropout, "regression": self.regression,
-                                         "finetuning": self.finetuning, "db": self.db}
-        if self.gpuid:
-            self.service_parameters_mllib.update({"gpuid": self.gpuid})
+        # Check if a repository is given otherwise creates one
+        if "repository" not in self.model or not self.model["repository"]:
+            self.model["repository"] = tempfile.mkdtemp(prefix="pydd_", dir=self.tmp_dir)
+            os_utils._create_dirs([self.model["repository"]])
+        else:
+            assert os.path.exists(self.model["repository"]), "model repository does not exist"
 
         json_dump = self.create_service(self.sname, self.model, self.description, self.mllib,
-                                        self.service_parameters_input, self.service_parameters_mllib,
+                                        self.service_parameters_input,
+                                        self.service_parameters_mllib,
                                         self.service_parameters_output)
         self.answers.append(json_dump)
 
@@ -173,8 +144,7 @@ class AbstractMLP(AbstractDDCalls):
                                 self.service_parameters_mllib,
                                 self.service_parameters_output)
 
-        json_dump = self.post_train(self.sname,
-                                    data,
+        json_dump = self.post_train(self.sname, data,
                                     parameters_input,
                                     parameters_mllib,
                                     parameters_output, async=async)
@@ -226,5 +196,48 @@ class AbstractMLP(AbstractDDCalls):
         return self
 
 
-class AbstractXGB(AbstractDDCalls):
-    pass
+if __name__ == "__main__":
+    """
+    Simple unit test
+    """
+    import numpy as np
+    from pydd.solver import GenericSolver
+    from sklearn import datasets, model_selection, preprocessing
+    from pydd.connectors import SVMConnector, ArrayConnector
+
+    # Parameters
+    n_classes = 10
+
+    X, y = datasets.load_digits(n_class=n_classes, return_X_y=True)
+    X = preprocessing.StandardScaler().fit_transform(X)
+    tr_f = os.path.abspath('x_train.svm')
+    datasets.dump_svmlight_file(X, y, tr_f)
+
+    model = {"templates": "../templates/caffe", "repository": ""}
+    service_parameters_input = {"connector": "svm"}
+    service_parameters_output = {}
+    service_parameters_mllib = {"nclasses": n_classes,
+                                "gpu": True, "gpuid": 0,
+                                "template": "mlp", "layers": [100],
+                                "activation": "relu", "dropout": 0.5, "db": True}
+    clf = AbstractModels(host="localhost", port=8085, sname="",  description="", mllib="caffe",
+                         service_parameters_input=service_parameters_input,
+                         service_parameters_mllib=service_parameters_mllib,
+                         service_parameters_output=service_parameters_output,
+                         model=model,
+                         tmp_dir=None)
+
+    train_parameters_input = {"db": True},
+    train_parameters_output = {"measure": ["accp", "mcll"]},
+    train_parameters_mllib = {
+        "gpu": service_parameters_mllib["gpu"],
+        "solver": {"iterations": 100,
+                   "base_lr": 0.01,
+                   "solver_type": "SGD"},
+        "net": {"batch_size": 128},
+    }
+
+    clf._fit([tr_f], train_parameters_input, train_parameters_mllib, train_parameters_output,
+             display_metric_interval=1, async=True)
+
+    os_utils._remove_files([tr_f])
