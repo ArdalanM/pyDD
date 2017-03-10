@@ -89,17 +89,17 @@ def sparse_to_sparse_strings(X):
 
 
 def ndarray_to_sparse_strings(X):
-        list_svm_strings = []
+    list_svm_strings = []
 
-        for i in range(X.shape[0]):
-            x = X[i, :]
-            indexes = x.nonzero()[0]
-            values = x[indexes]
+    for i in range(X.shape[0]):
+        x = X[i, :]
+        indexes = x.nonzero()[0]
+        values = x[indexes]
 
-            # where the magic happen :)
-            # ".16g" is the precision of `dump_svmlight_file` function. We need to respect the same precision
-            svm_string = list(map(lambda idx_val: "{}:{:.16g}".format(idx_val[0], idx_val[1]), zip(indexes, values)))
-            svm_string = " ".join(svm_string)
-            list_svm_strings.append(svm_string)
+        # where the magic happen :)
+        # ".16g" is the precision of `dump_svmlight_file` function. We need to respect the same precision
+        svm_string = list(map(lambda idx_val: "{}:{:.16g}".format(idx_val[0], idx_val[1]), zip(indexes, values)))
+        svm_string = " ".join(svm_string)
+        list_svm_strings.append(svm_string)
 
-        return list_svm_strings
+    return list_svm_strings

@@ -117,15 +117,17 @@ class AbstractModels(AbstractDDCalls):
 
         # Check if a repository is given otherwise creates one
         if "repository" not in self.model or not self.model["repository"]:
-            self.model["repository"] = tempfile.mkdtemp(prefix="pydd_", dir=self.tmp_dir)
+            self.repository = tempfile.mkdtemp(prefix="pydd_", dir=self.tmp_dir)
+            self.model["repository"] = self.repository
             os_utils._create_dirs([self.model["repository"]])
         else:
-            assert os.path.exists(self.model["repository"]), "model repository does not exist"
+            assert os.path.exists(self.model["repository"]), "{} does not exist".format(self.model["repository"])
 
         json_dump = self.create_service(self.sname, self.model, self.description, self.mllib,
                                         self.service_parameters_input,
                                         self.service_parameters_mllib,
                                         self.service_parameters_output)
+        assert json_dump['status']['code'] == 201 and json_dump['status']['msg'] == "Created", json_dump
         self.answers.append(json_dump)
 
         with open("{}/model.json".format(self.model["repository"])) as f:
@@ -139,10 +141,11 @@ class AbstractModels(AbstractDDCalls):
             if "template" in self.service_parameters_mllib:
                 self.service_parameters_mllib.pop("template")
 
-            self.create_service(self.sname, self.model, self.description, self.mllib,
-                                self.service_parameters_input,
-                                self.service_parameters_mllib,
-                                self.service_parameters_output)
+            json_dump = self.create_service(self.sname, self.model, self.description, self.mllib,
+                                            self.service_parameters_input,
+                                            self.service_parameters_mllib,
+                                            self.service_parameters_output)
+            assert json_dump['status']['code'] == 201 and json_dump['status']['msg'] == "Created", json_dump
 
         json_dump = self.post_train(self.sname, data,
                                     parameters_input,
@@ -170,13 +173,13 @@ class AbstractModels(AbstractDDCalls):
 
         return train_logs
 
-    def _predict_proba(self, data, parameters_input, parameters_mllib, parameters_output):
+    def _predict_proba(self, data, parameters_input=None, parameters_mllib=None, parameters_output=None):
 
         json_dump = self.post_predict(self.sname, data,
                                       parameters_input,
                                       parameters_mllib,
                                       parameters_output)
-
+        assert json_dump['status']['code'] == 200 and json_dump['status']['msg'] == "OK", json_dump
         self.answers.append(json_dump)
         with open("{}/model.json".format(self.model["repository"])) as f:
             self.calls = [json.loads(line, encoding="utf-8") for line in f]
@@ -220,7 +223,7 @@ if __name__ == "__main__":
                                 "gpu": True, "gpuid": 0,
                                 "template": "mlp", "layers": [100],
                                 "activation": "relu", "dropout": 0.5, "db": True}
-    clf = AbstractModels(host="localhost", port=8085, sname="",  description="", mllib="caffe",
+    clf = AbstractModels(host="localhost", port=8085, sname="", description="", mllib="caffe",
                          service_parameters_input=service_parameters_input,
                          service_parameters_mllib=service_parameters_mllib,
                          service_parameters_output=service_parameters_output,
@@ -239,5 +242,7 @@ if __name__ == "__main__":
 
     clf._fit([tr_f], train_parameters_input, train_parameters_mllib, train_parameters_output,
              display_metric_interval=1, async=True)
+
+    json_dump = clf._predict_proba([tr_f], parameters_output={"best": -1})
 
     os_utils._remove_files([tr_f])
