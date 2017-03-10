@@ -401,8 +401,8 @@ class MLP(AbstractModels):
             self.data.extend(train_data.paths)
 
             if validation_data:
-                for conn in validation_data:
-                    self.data.extend(conn.paths)
+                for connector in validation_data:
+                    self.data.extend(connector.paths)
 
             if train_data.lmdb_paths:
                 assert os.path.exists(train_data.vocab_path)
@@ -496,4 +496,4 @@ if __name__ == "__main__":
 
     solver = GenericSolver(iterations=100, solver_type="SGD", base_lr=0.01, gamma=0.1, stepsize=30, momentum=0.9)
     clf.fit(train_data, validation_data=[val_data], solver=solver)
-    # clf.predict_proba(train_data)
+    y_pred = clf.predict_proba(train_data)
