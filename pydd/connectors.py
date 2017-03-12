@@ -4,15 +4,18 @@
 @brief:
 """
 
+import os
+
 
 class Connectors(object):
 
-    def __init__(self, X=None, Y=None, paths=[], lmdb_paths=[], vocab_path=""):
+    def __init__(self, X=None, Y=None, path="", lmdb_path="", vocab_path=""):
 
         self.X = X
         self.Y = Y
-        self.paths = paths
-        self.lmdb_paths = lmdb_paths
+
+        self.path = path
+        self.lmdb_path = lmdb_path
         self.vocab_path = vocab_path
 
         self.service_parameters_input = {}
@@ -23,10 +26,15 @@ class Connectors(object):
 class SVMConnector(Connectors):
     """
     """
-    def __init__(self, paths=[], lmdb_paths=[], vocab_path=""):
+    def __init__(self, path, lmdb_path="", vocab_path=""):
         self.name = "svm"
-        super(SVMConnector, self).__init__(paths=paths,
-                                           lmdb_paths=lmdb_paths,
+
+        if path:
+            if not os.path.exists(path):
+                print("warning: {} does not exist".format(path))
+
+        super(SVMConnector, self).__init__(path=path,
+                                           lmdb_path=lmdb_path,
                                            vocab_path=vocab_path)
 
 
@@ -34,7 +42,6 @@ class ArrayConnector(Connectors):
 
     def __init__(self, X, Y=None):
         self.name = "array"
-
         super(ArrayConnector, self).__init__(X, Y)
 
 
