@@ -22,7 +22,7 @@ class GenericSolver(object):
     power	            real	yes	    N/A	    Power applicable to some learning rate policies
     iter_size	        int	    yes	    1	Number of passes (iter_size * batch_size) at every iteration
     """
-    def __init__(self, iterations=None, snapshot=None, snapshot_prefix=None, solver_type=None,
+    def __init__(self, iterations=None, snapshot=None, snapshot_prefix=None, solver_type='SGD',
                  test_interval=None, test_initialization=True, lr_policy=None, base_lr=None, gamma=None,
                  stepsize=None, momentum=None, weight_decay=None, power=None, iter_size=1):
 
