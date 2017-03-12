@@ -50,14 +50,18 @@ class AbstractDDCalls(object):
                        service_parameters_mllib, service_parameters_output):
         json_dump = self.dd.put_service(sname, model, description, mllib, service_parameters_input,
                                         service_parameters_mllib, service_parameters_output)
+
+        assert json_dump['status']['code'] == 201 and json_dump['status']['msg'] == "Created", json_dump
         return json_dump
 
     def post_train(self, sname, data, train_parameters_input, train_parameters_mllib,
                    train_parameters_output, async):
-        self.dd.post_train(sname, data, train_parameters_input, train_parameters_mllib,
-                           train_parameters_output, async=async)
+        json_dump = self.dd.post_train(sname, data, train_parameters_input, train_parameters_mllib,
+                                       train_parameters_output, async=async)
 
-        return self
+        assert json_dump['status']['code'] == 201 and json_dump['status']['msg'] == "Created", json_dump
+
+        return json_dump
 
     def delete_train(self, sname, job=1):
         self.dd.delete_train(sname, job=job)
@@ -67,6 +71,9 @@ class AbstractDDCalls(object):
                      predict_parameters_output):
         json_dump = self.dd.post_predict(sname, data, predict_parameters_input,
                                          predict_parameters_mllib, predict_parameters_output)
+
+        assert json_dump['status']['code'] == 200 and json_dump['status']['msg'] == "OK", json_dump
+
         return json_dump
 
     def delete_service(self, sname, clear=None):
@@ -127,14 +134,13 @@ class AbstractModels(AbstractDDCalls):
                                         self.service_parameters_input,
                                         self.service_parameters_mllib,
                                         self.service_parameters_output)
-        assert json_dump['status']['code'] == 201 and json_dump['status']['msg'] == "Created", json_dump
         self.answers.append(json_dump)
 
         with open("{}/model.json".format(self.model["repository"])) as f:
             self.calls = [json.loads(line, encoding="utf-8") for line in f]
 
-    def _fit(self, data, parameters_input, parameters_mllib, parameters_output,
-             display_metric_interval, async):
+    def _train(self, data, parameters_input, parameters_mllib, parameters_output,
+               display_metric_interval, async):
 
         if self.n_fit > 0:
             self.delete_service(self.sname, "mem")
@@ -145,7 +151,6 @@ class AbstractModels(AbstractDDCalls):
                                             self.service_parameters_input,
                                             self.service_parameters_mllib,
                                             self.service_parameters_output)
-            assert json_dump['status']['code'] == 201 and json_dump['status']['msg'] == "Created", json_dump
 
         json_dump = self.post_train(self.sname, data,
                                     parameters_input,
@@ -165,10 +170,9 @@ class AbstractModels(AbstractDDCalls):
                 train_status = self.get_train(self.sname, job=1, timeout=display_metric_interval)
                 if train_status["head"]["status"] == "running":
                     train_logs = train_status["body"]["measure"]
-                    self.train_logs.append(train_logs)
-                    print(train_logs)
+                    if train_logs:
+                        self.train_logs.append(train_logs)
                 else:
-                    print(train_status)
                     break
 
         return train_logs
@@ -179,7 +183,6 @@ class AbstractModels(AbstractDDCalls):
                                       parameters_input,
                                       parameters_mllib,
                                       parameters_output)
-        assert json_dump['status']['code'] == 200 and json_dump['status']['msg'] == "OK", json_dump
         self.answers.append(json_dump)
         with open("{}/model.json".format(self.model["repository"])) as f:
             self.calls = [json.loads(line, encoding="utf-8") for line in f]
@@ -203,10 +206,7 @@ if __name__ == "__main__":
     """
     Simple unit test
     """
-    import numpy as np
-    from pydd.solver import GenericSolver
-    from sklearn import datasets, model_selection, preprocessing
-    from pydd.connectors import SVMConnector, ArrayConnector
+    from sklearn import datasets, preprocessing
 
     # Parameters
     n_classes = 10
