@@ -118,7 +118,9 @@ class AbstractModels(AbstractDDCalls):
         super(AbstractModels, self).__init__(self.host, self.port)
 
         if self.sname:
-            self.delete_service(self.sname, "mem")
+            json_dump = self.get_service(self.sname)
+            if json_dump['status']['msg'] == 'OK':
+                self.delete_service(self.sname, "mem")
         else:
             self.sname = "pyDD_{}".format(time_utils.fulltimestamp())
             self.description = self.sname
