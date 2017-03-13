@@ -14,8 +14,8 @@ from pydd.connectors import SVMConnector
 def create_lmdb_from_svm(svm_path, lmdb_path, vocab_path=None, host='localhost',
                          port=8085, nclasses=2, gpu=True, tmp_folder=None):
 
-    assert not os.path.exists(lmdb_path)
-    assert not os.path.exists(vocab_path)
+    if os.path.exists(lmdb_path):
+        print("warning: {} exist, overwriting it".format(lmdb_path))
 
     tmp_folder = tempfile.mkdtemp(prefix="pydd_", dir=tmp_folder) if tmp_folder else tempfile.mkdtemp(prefix="pydd_")
 
@@ -65,13 +65,12 @@ if __name__ == "__main__":
 
     # create lmdb and vocab file
     create_lmdb_from_svm(svm_path=tr_svm_f, lmdb_path=tr_lmdb_f, vocab_path=vocab_path, **params)
-    # create_lmdb_from_svm(svm_path=tr_svm_f, lmdb_path=tr_lmdb_f, **params)
+    create_lmdb_from_svm(svm_path=te_svm_f, lmdb_path=te_lmdb_f, **params)
 
     tr_data = SVMConnector(path=tr_svm_f, lmdb_path=tr_lmdb_f, vocab_path=vocab_path)
     te_data = SVMConnector(path=tr_svm_f, lmdb_path=tr_lmdb_f)
 
     optimizer = GenericSolver(solver_type='SGD', base_lr=0.01, iterations=100)
-
     clf = LR(**params)
     clf.fit(tr_data, validation_data=[te_data], solver=optimizer)
 
