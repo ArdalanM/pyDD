@@ -78,7 +78,8 @@ class AbstractDDCalls(object):
 
     def delete_service(self, sname, clear=None):
         json_dump = self.dd.delete_service(sname, clear)
-        return json_dump
+        assert json_dump['status']['code'] == 200 and json_dump['status']['msg'] == "OK", json_dump
+        return self
 
     def get_service(self, sname):
         json_dump = self.dd.get_service(sname)
@@ -113,7 +114,7 @@ class AbstractModels(AbstractDDCalls):
         self.n_fit = 0
         self.calls = []
         self.answers = []
-        self.train_logs = None
+        # self.train_logs = None
         super(AbstractModels, self).__init__(self.host, self.port)
 
         if self.sname:
@@ -169,10 +170,12 @@ class AbstractModels(AbstractDDCalls):
             while True:
                 train_status = self.get_train(self.sname, job=1, timeout=display_metric_interval)
                 if train_status["head"]["status"] == "running":
-                    train_logs = train_status["body"]["measure"]
-                    if train_logs:
-                        self.train_logs.append(train_logs)
+                    logs = train_status["body"]["measure"]
+                    print(logs)
+                    if logs:
+                        train_logs.append(logs)
                 else:
+                    print(train_status)
                     break
 
         return train_logs
