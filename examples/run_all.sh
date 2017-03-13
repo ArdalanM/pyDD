@@ -1,5 +1,5 @@
 #!/bin/sh
-python classification.py
-python predict_from_model.py
-python sklearn_cross_validation.py
-python sklearn_grid_search.py
+python classification_from_array.py
+python classification_from_svm.py
+python prediction_from_model.py
+python train_from_lmdb.py
