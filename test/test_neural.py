@@ -6,9 +6,9 @@
 import os
 import pytest
 import numpy as np
-from scipy.sparse import csc_matrix, csr_matrix, coo_matrix
+from scipy.sparse import csc_matrix
 from pydd.utils import os_utils, lmdb_utils
-from pydd.models import MLP, LR, XGB
+from pydd.models import MLP, LR
 from pydd.solver import GenericSolver
 from pydd.connectors import ArrayConnector, SVMConnector
 from sklearn import datasets, metrics, model_selection, preprocessing
@@ -38,7 +38,6 @@ te_f = os.path.abspath('x_test.svm')
 #####################
 # create connectors #
 #####################
-
 # array connector
 xtr_arr, xte_arr = ArrayConnector(xtr, ytr), ArrayConnector(xte, yte)
 
@@ -136,6 +135,9 @@ class TestSVM(object):
 
     def test_lmdb_creation(self):
 
+        params = nn_params.copy()
+        params.update({'nclasses': n_classes})
+
         # Create dataset
         X, Y = datasets.load_digits(return_X_y=True)
         X = preprocessing.StandardScaler().fit_transform(X)
@@ -149,17 +151,22 @@ class TestSVM(object):
         datasets.dump_svmlight_file(x_train, y_train, tr_svm_f)
         datasets.dump_svmlight_file(x_test, y_test, te_svm_f)
 
-        lmdb_utils.create_lmdb_from_svm(svm_path=tr_svm_f, lmdb_path=tr_lmdb_f, vocab_path=vocab_path, **nn_params)
-        lmdb_utils.create_lmdb_from_svm(svm_path=tr_svm_f, lmdb_path=tr_lmdb_f, **nn_params)
+        lmdb_utils.create_lmdb_from_svm(svm_path=tr_svm_f, lmdb_path=tr_lmdb_f, vocab_path=vocab_path, **params)
+        lmdb_utils.create_lmdb_from_svm(svm_path=te_svm_f, lmdb_path=te_lmdb_f, **params)
 
-        clf_lmdb = MLP(**nn_params)
-        clf_lmdb.fit([train_path, test_path], lmdb_paths=[lmdb_path, lmdb_path1], vocab_path=vocab)
+        tr_lmdb = SVMConnector(path=tr_svm_f, lmdb_path=tr_lmdb_f, vocab_path=vocab_path)
+        te_lmdb = SVMConnector(path=te_svm_f, lmdb_path=te_lmdb_f)
 
-        y_pred_lmdb = clf_lmdb.predict_proba(train_path)
+        optimizer = GenericSolver(solver_type='SGD', base_lr=0.01, iterations=100)
+        clf = MLP(**params)
+        clf.fit(tr_lmdb, validation_data=[te_lmdb], solver=optimizer)
 
+        ytr_prob = clf.predict_proba(tr_lmdb)
+        acc = metrics.accuracy_score(y_train, ytr_prob.argmax(-1))
+        assert acc > 0.7
 
-
-
+        os_utils._remove_files([tr_svm_f, te_svm_f, vocab_path])
+        os_utils._remove_dirs([tr_lmdb_f, te_lmdb_f])
 
 if __name__ == '__main__':
     pytest.main([__file__])
