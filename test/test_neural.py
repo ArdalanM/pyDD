@@ -22,7 +22,7 @@ n_classes = 10
 
 # dd params
 nn_params = {'host': 'localhost', 'port': 8085, 'gpu': True}
-solver_param = {"iterations": 100, "base_lr": 0.01, "gamma": 0.1, "stepsize": 30, "momentum": 0.9}
+solver_param = {"iterations": 100, "base_lr": 0.1, "gamma": 0.1, "stepsize": 30, "momentum": 0.9}
 # xgb_params = {'host': 'localhost', 'port': 8085}
 # booster_params = {"max_depth": 10, "subsample": 0.8, "eta": 0.3}
 
@@ -83,6 +83,7 @@ class TestSVM(object):
             clf.fit(tr_data, te_data, optimizer)
             y_pred = clf.predict(tr_data)
             acc = metrics.accuracy_score(ytr, y_pred)
+            print(acc)
             assert acc > 0.7
 
         os_utils._remove_files([tr_f, te_f])
