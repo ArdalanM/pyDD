@@ -4,11 +4,6 @@ pyDD: python binding for [DeepDetect](https://github.com/beniz/deepdetect)
 <!--[![Coverage Status](https://coveralls.io/repos/github/ArdalanM/pyLightGBM/badge.svg?branch=master)](https://coveralls.io/github/ArdalanM/pyLightGBM?branch=master)-->
 <!--[![Packagist](https://img.shields.io/packagist/l/doctrine/orm.svg)]()-->
 
-Features:
- - Seamless integration with scikit-learn (`GridSearchCV`, `cross_val_score`, etc...)
- - Classification from array/svm (`clf.fit(X, Y)` or `clf.fit("path/to/data.svm`)
- - Predict from existing model
-
 TO DO:
  - Support other DeepDetect connectors: `image`, `csv`, `text`
  
@@ -22,58 +17,52 @@ Examples
 Make sure DeepDetect is up and running:  
 `./main/dede`
 
-* Classification from array:
-
+* Classification from array:  
 ```python
-from sklearn import datasets, metrics, preprocessing, model_selection
-from pydd.MLP import MLPfromArray
+import numpy as np
+from pydd.solver import GenericSolver
+from pydd.models import MLP
+from pydd.connectors import ArrayConnector
+from sklearn import datasets, metrics, model_selection, preprocessing
 
-X, Y = datasets.load_digits(return_X_y=True)
+# create dataset
+n_classes = 10
+X, y = datasets.load_digits(n_class=n_classes, return_X_y=True)
 X = preprocessing.StandardScaler().fit_transform(X)
-x_train, x_test, y_train, y_test = model_selection.train_test_split(X, Y, test_size=0.2)
+xtr, xte, ytr, yte = model_selection.train_test_split(X, y, test_size=0.2)
 
-clf = MLPfromArray(port=8080, nclasses=10, gpu=True)
-clf.fit(x_train, y_train, validation_data=[(x_test, y_test)])
+# create connector
+train_data, test_data = ArrayConnector(xtr, ytr), ArrayConnector(xte, yte)
 
-print("Accuracy: ", metrics.accuracy_score(y_test, clf.predict(x_test)))
-print("Log loss: ", metrics.log_loss(y_test, clf.predict_proba(x_test)))
+# Define models and class weights
+clf = MLP(port=8085, nclasses=n_classes, gpu=True)
+solver = GenericSolver(iterations=10000, solver_type="SGD", base_lr=0.01, gamma=0.1, stepsize=30, momentum=0.9)
+
+logs = clf.fit(train_data, validation_data=[test_data], solver=solver)
+yte_pred = clf.predict(test_data)
+report = metrics.classification_report(yte, yte_pred)
 ```
 
-- Classification from svm:
-
+- Classification from svm:  
 ```python
-from pydd.MLP import MLPfromSVM
+import numpy as np
+from pydd.solver import GenericSolver
+from pydd.models import MLP
+from pydd.connectors import SVMConnector
+from sklearn import datasets, metrics, model_selection, preprocessing
 
-train_path, test_path = 'x_train.svm', 'x_test.svm'
-params = {'port': 8080, 'nclasses': 10, 'layers': [100, 100], 'activation': 'relu',
-          'dropout': 0.5, 'db': True, 'gpu': True}
+# create connector
+n_classes = 10
+train_data = SVMConnector(path="x_train.svm")
+test_data = SVMConnector(path="x_test.svm")
 
-clf = MLPfromSVM(**params)
-y_prob = clf.predict_proba(test_path)
-y_pred = clf.predict(test_path)
+
+# Define models and class weights
+clf = MLP(port=8085, nclasses=n_classes, gpu=True)
+solver = GenericSolver(iterations=10000, solver_type="SGD", base_lr=0.01, gamma=0.1, stepsize=30, momentum=0.9)
+
+logs = clf.fit(train_data, validation_data=[test_data], solver=solver)
+yte_pred = clf.predict(test_data)
 ```
 
-- Grid Search:
-
-```python
-from pydd.MLP import MLPfromArray
-from sklearn import datasets, model_selection, preprocessing, metrics
-
-X, Y = datasets.load_digits(return_X_y=True)
-X = preprocessing.StandardScaler().fit_transform(X)
-
-# Parameters
-params = {'port': 8080, 'nclasses': 10,
-            'layers': [100],
-          'activation': 'relu', 'dropout': 0.1, 'db': True, 'gpu': True}
-
-param_grid = {'dropout': [0.1, 0.8],'layers': [[10], [100]]}
-
-clf = MLPfromArray(**params)
-
-scorer = metrics.make_scorer(metrics.accuracy_score)
-skf = model_selection.StratifiedKFold(n_splits=3)
-
-grid = model_selection.GridSearchCV(clf, param_grid, scoring=scorer, cv=skf)
-grid.fit(X, Y)
-```
+Check out the [example](https://github.com/ArdalanM/pyDD/tree/master/examples) folder for more cases.
