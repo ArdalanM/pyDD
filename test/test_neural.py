@@ -22,7 +22,7 @@ n_classes = 10
 
 # dd params
 nn_params = {'host': 'localhost', 'port': 8085, 'gpu': True}
-solver_param = {"iterations": 100, "base_lr": 0.1, "gamma": 0.1, "stepsize": 30, "momentum": 0.9}
+solver_param = {"iterations": 200, "base_lr": 0.01, "gamma": 0.1, "stepsize": 30, "momentum": 0.9}
 # xgb_params = {'host': 'localhost', 'port': 8085}
 # booster_params = {"max_depth": 10, "subsample": 0.8, "eta": 0.3}
 
