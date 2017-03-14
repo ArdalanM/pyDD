@@ -33,7 +33,7 @@ import json
 import time
 import tempfile
 from pydd.utils import time_utils, os_utils
-from pydd.utils.dd_client import DD
+from pydd.utils.dd_client import DD, DDCommunicationError
 from pydd.utils.dd_utils import to_array
 
 
@@ -78,8 +78,7 @@ class AbstractDDCalls(object):
 
     def delete_service(self, sname, clear=None):
         json_dump = self.dd.delete_service(sname, clear)
-        assert json_dump['status']['code'] == 200 and json_dump['status']['msg'] == "OK", json_dump
-        return self
+        return json_dump
 
     def get_service(self, sname):
         json_dump = self.dd.get_service(sname)
@@ -87,6 +86,10 @@ class AbstractDDCalls(object):
 
     def get_train(self, sname, job=1, timeout=0, measure_hist=False):
         json_dump = self.dd.get_train(sname, job, timeout, measure_hist)
+        return json_dump
+
+    def get_info(self):
+        json_dump = self.dd.info()
         return json_dump
 
 
@@ -118,9 +121,7 @@ class AbstractModels(AbstractDDCalls):
         super(AbstractModels, self).__init__(self.host, self.port)
 
         if self.sname:
-            json_dump = self.get_service(self.sname)
-            if json_dump['status']['msg'] == 'OK':
-                self.delete_service(self.sname, "mem")
+            self.delete_service(self.sname, clear="mem")
         else:
             self.sname = "pyDD_{}".format(time_utils.fulltimestamp())
             self.description = self.sname
@@ -208,9 +209,7 @@ class AbstractModels(AbstractDDCalls):
 
 
 if __name__ == "__main__":
-    """
-    Simple unit test
-    """
+    """ Simple unit test """
     from sklearn import datasets, preprocessing
 
     # Parameters
@@ -228,7 +227,7 @@ if __name__ == "__main__":
                                 "gpu": True, "gpuid": 0,
                                 "template": "mlp", "layers": [100],
                                 "activation": "relu", "dropout": 0.5, "db": True}
-    clf = AbstractModels(host="localhost", port=8085, sname="", description="", mllib="caffe",
+    clf = AbstractModels(host="localhost", port=8085, sname="sdfs-34-34-34", description="", mllib="caffe",
                          service_parameters_input=service_parameters_input,
                          service_parameters_mllib=service_parameters_mllib,
                          service_parameters_output=service_parameters_output,
@@ -245,8 +244,8 @@ if __name__ == "__main__":
         "net": {"batch_size": 128},
     }
 
-    clf._fit([tr_f], train_parameters_input, train_parameters_mllib, train_parameters_output,
-             display_metric_interval=1, async=True)
+    clf._train([tr_f], train_parameters_input, train_parameters_mllib, train_parameters_output,
+               display_metric_interval=1, async=True)
 
     json_dump = clf._predict_proba([tr_f], parameters_output={"best": -1})
 
