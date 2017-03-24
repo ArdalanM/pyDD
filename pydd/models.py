@@ -38,6 +38,7 @@ class MLP(AbstractModels):
                  dropout=0.5,
                  regression=False,
                  finetuning=False,
+                 weights=False,
                  db=True,
                  tmp_dir=None):
 
@@ -59,6 +60,7 @@ class MLP(AbstractModels):
         self.dropout = dropout
         self.regression = regression
         self.finetuning = finetuning
+        self.weights = weights
         self.db = db
         self.tmp_dir = tmp_dir
 
@@ -69,7 +71,9 @@ class MLP(AbstractModels):
                                          "template": self.template, "layers": self.layers,
                                          "activation": self.activation,
                                          "dropout": self.dropout, "regression": self.regression,
-                                         "finetuning": self.finetuning, "db": self.db}
+                                         "finetuning": self.finetuning,
+                                         "weights": self.weights,
+                                         "db": self.db}
 
         self.service_parameters_input = {"connector": self.connector}
 
