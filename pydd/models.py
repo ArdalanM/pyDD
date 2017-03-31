@@ -32,6 +32,7 @@ class MLP(AbstractModels):
                  ntargets=None,
                  gpu=False,
                  gpuid=0,
+                 resume=False,
                  template="mlp",
                  layers=[50],
                  activation="relu",
@@ -55,6 +56,7 @@ class MLP(AbstractModels):
         self.gpu = gpu
         self.gpuid = gpuid
         self.template = template
+        self.resume = resume
         self.layers = layers
         self.activation = activation
         self.dropout = dropout
@@ -64,16 +66,31 @@ class MLP(AbstractModels):
         self.db = db
         self.tmp_dir = tmp_dir
 
-        self.model = {"templates": self.templates, "repository": self.repository}
+        # Resume Training
+        if self.resume:
+            self.model = {"repository": self.repository}
 
-        self.service_parameters_mllib = {"nclasses": self.nclasses, "ntargets": self.ntargets,
-                                         "gpu": self.gpu, "gpuid": self.gpuid,
-                                         "template": self.template, "layers": self.layers,
-                                         "activation": self.activation,
-                                         "dropout": self.dropout, "regression": self.regression,
-                                         "finetuning": self.finetuning,
-                                         "weights": self.weights,
-                                         "db": self.db}
+            self.service_parameters_mllib = {"nclasses": self.nclasses, "ntargets": self.ntargets,
+                                            "gpu": self.gpu, "gpuid": self.gpuid, "resume": self.resume, "layers": self.layers,
+                                            "activation": self.activation,
+                                            "dropout": self.dropout, "regression": self.regression,
+                                            "finetuning": self.finetuning,
+                                            "weights": self.weights,
+                                            "db": self.db}
+
+        # Train from scratch
+        else:
+            self.model = {"templates": self.templates, "repository": self.repository}
+
+            self.service_parameters_mllib = {"nclasses": self.nclasses, "ntargets": self.ntargets,
+                                            "gpu": self.gpu, "gpuid": self.gpuid,  "resume": self.resume,
+                                            "template": self.template, "layers": self.layers,
+                                            "activation": self.activation,
+                                            "dropout": self.dropout, "regression": self.regression,
+                                            "finetuning": self.finetuning,
+                                            "weights": self.weights,
+                                            "db": self.db}
+
 
         self.service_parameters_input = {"connector": self.connector}
 
@@ -98,11 +115,11 @@ class MLP(AbstractModels):
             "gpu": self.service_parameters_mllib["gpu"],
             "solver": solver.__dict__,
             "net": {"batch_size": batch_size},
-            "class_weights": class_weights if class_weights else [1.] * self.service_parameters_mllib["nclasses"]
+            "class_weights": class_weights if class_weights else [1.] * self.service_parameters_mllib["nclasses"],
+            "resume": self.service_parameters_mllib["resume"]
         }
 
         self.data = []
-
         if train_data.name == "svm":
             self.data.append(train_data.path)
 
@@ -222,10 +239,10 @@ class LR(AbstractModels):
         self.model = {"templates": self.templates, "repository": self.repository}
 
         self.service_parameters_mllib = {"nclasses": self.nclasses, "ntargets": self.ntargets,
-                                         "gpu": self.gpu, "gpuid": self.gpuid,
-                                         "template": self.template,
-                                         "regression": self.regression,
-                                         "finetuning": self.finetuning, "db": self.db}
+                                        "gpu": self.gpu, "gpuid": self.gpuid,
+                                        "template": self.template,
+                                        "regression": self.regression,
+                                        "finetuning": self.finetuning, "db": self.db}
 
         self.service_parameters_input = {"connector": self.connector}
 
@@ -521,3 +538,4 @@ if __name__ == "__main__":
     logs = clf.fit(train_data, validation_data=[val_data])
 
     os_utils._remove_files([tr_f, te_f])
+
