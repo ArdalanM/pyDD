@@ -19,8 +19,7 @@ def _gen_signature():
 
 def _create_dirs(dirs):
     for dir in dirs:
-        if not os.path.exists(dir):
-            os.makedirs(dir)
+        os.makedirs(dir, exist_ok=True)
 
 
 def _remove_files(files):
