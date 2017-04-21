@@ -7,6 +7,7 @@
 import os
 import shutil
 import numpy as np
+import glob
 from scipy import sparse
 from sklearn.datasets import dump_svmlight_file
 
@@ -120,7 +121,7 @@ class MLP(AbstractModels):
         }
 
         self.data = []
-        if train_data.name == "svm":
+        if train_data.name in ['svm', 'image']:
             self.data.append(train_data.path)
 
             if train_data.lmdb_path:
@@ -179,6 +180,12 @@ class MLP(AbstractModels):
 
         if connector.name == "lmdb":
             data = [connector.path]
+
+        if connector.name == "image":
+            if os.path.isdir(connector.path):
+                data = glob.glob(os.path.join(connector.path, '*'))
+            else:
+                data = [connector.path]
 
         elif connector.name == "array":
             if type(connector.X) == np.ndarray:
