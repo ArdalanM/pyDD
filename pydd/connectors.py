@@ -100,5 +100,18 @@ class ImageConnector(object):
     """
     TODO: finish this connector
     """
-    def __init__(self):
+    def __init__(self, path, width, height, bw, mean, std):
+        self.name = 'image'
+
+        if path:
+            if not os.path.exists(path):
+                print("warning: {} does not exist".format(path))
+
+        super(ImageConnector, self).__init__(path=path, 
+                                             width=width,
+                                             height=height,
+                                             bw=bw,
+                                             mean=mean,
+                                             std=std)
+
         pass
