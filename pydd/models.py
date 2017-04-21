@@ -92,8 +92,7 @@ class MLP(AbstractModels):
                                             "weights": self.weights,
                                             "db": self.db}
 
-
-        self.service_parameters_input = {"connector": self.connector}
+        self.service_parameters_input = {"connector": self.connector if isinstance(self.connector, string) else connector.name}
 
         self.service_parameters_output = {}
         super(MLP, self).__init__(host=self.host, port=self.port, sname=self.sname,
@@ -254,7 +253,7 @@ class LR(AbstractModels):
                                         "regression": self.regression,
                                         "finetuning": self.finetuning, "db": self.db}
 
-        self.service_parameters_input = {"connector": self.connector}
+        self.service_parameters_input = {"connector": self.connector if isinstance(self.connector, string) else connector.name}
 
         self.service_parameters_output = {}
         super(LR, self).__init__(host=self.host, port=self.port, sname=self.sname,
