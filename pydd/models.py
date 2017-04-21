@@ -177,6 +177,9 @@ class MLP(AbstractModels):
         if connector.name == "svm":
             data = [connector.path]
 
+        if connector.name == "lmdb":
+            data = [connector.path]
+
         elif connector.name == "array":
             if type(connector.X) == np.ndarray:
                 data = ndarray_to_sparse_strings(connector.X)
@@ -326,6 +329,9 @@ class LR(AbstractModels):
         self.predict_parameters_output = {"best": nclasses}
 
         if connector.name == "svm":
+            data = [connector.path]
+
+        if connector.name == "lmdb":
             data = [connector.path]
 
         elif connector.name == "array":
