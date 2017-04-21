@@ -107,11 +107,10 @@ class ImageConnector(object):
             if not os.path.exists(path):
                 print("warning: {} does not exist".format(path))
 
-        super(ImageConnector, self).__init__(path=path, 
+        super(ImageConnector, self).__init__(path=path,
+                                             lmdb_path=lmbd_path,
                                              width=width,
                                              height=height,
                                              bw=bw,
                                              mean=mean,
                                              std=std)
-
-        pass
