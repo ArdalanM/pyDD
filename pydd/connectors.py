@@ -100,7 +100,7 @@ class ImageConnector(object):
     """
     TODO: finish this connector
     """
-    def __init__(self, path, width, height, bw, mean, std):
+    def __init__(self, path, lmdb_path, width, height, bw, mean, std):
         self.name = 'image'
 
         if path:
@@ -108,7 +108,7 @@ class ImageConnector(object):
                 print("warning: {} does not exist".format(path))
 
         super(ImageConnector, self).__init__(path=path,
-                                             lmdb_path=lmbd_path,
+                                             lmdb_path=lmdb_path,
                                              width=width,
                                              height=height,
                                              bw=bw,
