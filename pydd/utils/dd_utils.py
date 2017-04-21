@@ -17,7 +17,7 @@ def to_array(json_dump, nclasses):
 
     for i, row in enumerate(json_dump['body']['predictions']):
         row_number = int(row['uri'])
-        assert row_number == i
+        # assert row_number == i # This assertion will raise error for LMDB predictions
 
         # print(row['classes'])
         for classe in row['classes']:
