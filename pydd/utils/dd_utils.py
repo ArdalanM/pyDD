@@ -34,7 +34,8 @@ def sparse_to_sparse_strings(X):
     list_svm_strings = [""] * X.shape[0]
     for row, col, data in zip(X.row, X.col, X.data):
         # ".16g" is the precision of `dump_svmlight_file` function. We need to respect the same precision
-        list_svm_strings[row] += "{}:{:.16g} ".format(col, data)
+        # use `%` python string formatting it's faster than `format`
+        list_svm_strings[row] += "%d:%.16g" % (col, data)
 
     list_svm_strings = list(map(lambda x: x[:-1], list_svm_strings))
 
@@ -51,7 +52,8 @@ def ndarray_to_sparse_strings(X):
 
         # where the magic happen :)
         # ".16g" is the precision of `dump_svmlight_file` function. We need to respect the same precision
-        svm_string = list(map(lambda idx_val: "{}:{:.16g}".format(idx_val[0], idx_val[1]), zip(indexes, values)))
+        # use `%` python string formatting it's faster than `format`
+        svm_string = list(map(lambda idx_val: "%d:%.16g" % (idx_val[0], idx_val[1]), zip(indexes, values)))
         svm_string = " ".join(svm_string)
         list_svm_strings.append(svm_string)
 
