@@ -19,5 +19,6 @@ install:
 
   #  Install LightGBM
   - git clone https://github.com/beniz/deepdetect.git $HOME/deepdetect
+  - sudo cp /usr/share/cmake-3.2/Modules/FindEigen3.cmake $HOME/deepdetect/cmake/.
   - cd $HOME/deepdetect && mkdir build && cd build && cmake .. && make && cd main && ./dede --port 8085
   - cd $TRAVIS_BUILD_DIR
