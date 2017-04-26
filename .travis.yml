@@ -6,10 +6,14 @@ python:
   - "3.4"
 
 install:
-  # deepdetect dependencies
+
+  ########################
+  ## Instant DeepDetect ##
+  ########################
+  # dd dependencies
   - sudo apt-get install -y build-essential libgoogle-glog-dev libgflags-dev libeigen3-dev libopencv-dev libcppnetlib-dev libboost-dev libboost-iostreams-dev libcurlpp-dev libcurl4-openssl-dev protobuf-compiler libopenblas-dev libhdf5-dev libprotobuf-dev libleveldb-dev libsnappy-dev liblmdb-dev libutfcpp-dev
 
-  # Download libcurlpp-dev
+  # download libcurlpp-dev
   - sudo apt-get remove --yes libcurlpp0
   - git clone https://github.com/datacratic/curlpp
   - cd curlpp
@@ -18,11 +22,21 @@ install:
   - make
   - sudo make install
 
-  #  Install deepdetect
-  - git clone https://github.com/beniz/deepdetect.git $HOME/deepdetect
+#  # compile dd
+#  - git clone https://github.com/beniz/deepdetect.git $HOME/deepdetect
+#  - sudo cp $TRAVIS_BUILD_DIR/FindEigen3.cmake $HOME/deepdetect/cmake/.
+#  - cd $HOME/deepdetect && mkdir build && cd build && cmake .. && make && cd main && ./dede --port 8085
+#  - cd $TRAVIS_BUILD_DIR
 
-  # some kungfu because deepdetect does not compile out of the box
-  - sudo cp $TRAVIS_BUILD_DIR/FindEigen3.cmake $HOME/deepdetect/cmake/.
+  # Replace dep1 dep2 ... with your dependencies
+#  - sudo apt-get install -y python3-pip
+  - sudo pip3 install pytest pytest-cov python-coveralls pytest-xdist coverage pep8 pytest-pep8
+  - sudo pip3 install -r requirements.txt
+  - python3 setup.py install
 
-  - cd $HOME/deepdetect && mkdir build && cd build && cmake .. && make && cd main && ./dede --port 8085
-  - cd $TRAVIS_BUILD_DIR
+script:
+#  PYTHONPATH=$PWD:$PYTHONPATH py.test --pep8 -m pep8 -n0;
+  PYTHONPATH=$PWD:$PYTHONPATH py.test tests/;
+
+after_success:
+  - coveralls
