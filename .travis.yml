@@ -20,6 +20,9 @@ install:
 
   #  Install deepdetect
   - git clone https://github.com/beniz/deepdetect.git $HOME/deepdetect
+
+  # some kungfu because deepdetect does not compile out of the box
   - sudo cp $TRAVIS_BUILD_DIR/FindEigen3.cmake $HOME/deepdetect/cmake/.
+
   - cd $HOME/deepdetect && mkdir build && cd build && cmake .. && make && cd main && ./dede --port 8085
   - cd $TRAVIS_BUILD_DIR
