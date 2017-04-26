@@ -1,8 +1,8 @@
 pyDD: python binding for [DeepDetect](https://github.com/beniz/deepdetect)
 ============================================================================
-<!--[![Build Status](https://travis-ci.org/ArdalanM/pyLightGBM.svg?branch=feat_ci)](https://travis-ci.org/ArdalanM/pyLightGBM)-->
-<!--[![Coverage Status](https://coveralls.io/repos/github/ArdalanM/pyLightGBM/badge.svg?branch=master)](https://coveralls.io/github/ArdalanM/pyLightGBM?branch=master)-->
-<!--[![Packagist](https://img.shields.io/packagist/l/doctrine/orm.svg)]()-->
+[![Build Status](https://travis-ci.org/ArdalanM/pyLightGBM.svg?branch=feat_ci)](https://travis-ci.org/ArdalanM/pyLightGBM)
+[![Coverage Status](https://coveralls.io/repos/github/ArdalanM/pyLightGBM/badge.svg?branch=master)](https://coveralls.io/github/ArdalanM/pyLightGBM?branch=master)
+[![Packagist](https://img.shields.io/packagist/l/doctrine/orm.svg)]()
 
 TO DO:
  - Support other DeepDetect connectors: `image`, `csv`, `text`
