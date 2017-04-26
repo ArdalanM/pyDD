@@ -18,6 +18,6 @@ install:
   - sudo make install
 
   #  Install LightGBM
-  - git clone https://github.com/beniz/deepdetect.git &HOME/DeepDetect
-  - cd $HOME/LightGBM && mkdir build && cd build && cmake .. && make && cd main && ./dede --port 8085
+  - git clone https://github.com/beniz/deepdetect.git
+  - cd $HOME/deepdetect && mkdir build && cd build && cmake .. && make && cd main && ./dede --port 8085
   - cd $TRAVIS_BUILD_DIR
