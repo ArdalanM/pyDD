@@ -6,6 +6,7 @@ python:
   - "3.4"
 
 install:
+  # deepdetect dependencies
   - sudo apt-get install -y build-essential libgoogle-glog-dev libgflags-dev libeigen3-dev libopencv-dev libcppnetlib-dev libboost-dev libboost-iostreams-dev libcurlpp-dev libcurl4-openssl-dev protobuf-compiler libopenblas-dev libhdf5-dev libprotobuf-dev libleveldb-dev libsnappy-dev liblmdb-dev libutfcpp-dev
 
   # Download libcurlpp-dev
@@ -17,8 +18,8 @@ install:
   - make
   - sudo make install
 
-  #  Install LightGBM
+  #  Install deepdetect
   - git clone https://github.com/beniz/deepdetect.git $HOME/deepdetect
-#  - sudo cp /usr/share/cmake-3.2/Modules/FindEigen3.cmake $HOME/deepdetect/cmake/.
+  - sudo cp $TRAVIS_BUILD_DIR/FindEigen3.cmake $HOME/deepdetect/cmake/.
   - cd $HOME/deepdetect && mkdir build && cd build && cmake .. && make && cd main && ./dede --port 8085
   - cd $TRAVIS_BUILD_DIR
