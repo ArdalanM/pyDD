@@ -9,6 +9,10 @@ services:
   - docker
 
 before_install:
+  - sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1
+  - sudo sysctl -w net.ipv6.conf.default.disable_ipv6=1
+  - ip addr # for confirmation. can be skipped
+
   - docker pull beniz/deepdetect_cpu
   - docker run -d -p 8080:8080 -v $TRAVIS_BUILD_DIR:$TRAVIS_BUILD_DIR -v /tmp:/tmp beniz/deepdetect_cpu
 
