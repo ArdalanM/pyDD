@@ -37,8 +37,9 @@ before_install:
   - python setup.py install
 
 script:
-  PYTHONPATH=$PWD:$PYTHONPATH py.test --pep8 -m pep8 -n0;
-  PYTHONPATH=$PWD:$PYTHONPATH py.test tests/
+#  PYTHONPATH=$PWD:$PYTHONPATH py.test --pep8 -m pep8 -n0;
+  - curl http://localhost:8080
+  - PYTHONPATH=$PWD:$PYTHONPATH py.test tests/
 
 after_success:
   - coveralls
