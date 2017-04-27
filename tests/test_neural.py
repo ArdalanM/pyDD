@@ -21,7 +21,7 @@ test_size = 0.2
 n_classes = 10
 
 # dd params
-nn_params = {'host': '127.0.0.1', 'port': 8085, 'gpu': False}
+nn_params = {'host': 'localhost', 'port': 8080, 'gpu': False}
 solver_param = {"iterations": 200, "base_lr": 0.01, "gamma": 0.1, "stepsize": 30, "momentum": 0.9}
 # xgb_params = {'host': 'localhost', 'port': 8085}
 # booster_params = {"max_depth": 10, "subsample": 0.8, "eta": 0.3}
