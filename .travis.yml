@@ -10,9 +10,7 @@ services:
 
 before_install:
   - docker pull beniz/deepdetect_cpu
-  - docker run -d -p 8080:8080 \
-                  -v $TRAVIS_BUILD_DIR:$TRAVIS_BUILD_DIR \
-                  -v /tmp:/tmp beniz/deepdetect_cpu
+  - docker run -d -p 8080:8080 -v $TRAVIS_BUILD_DIR:$TRAVIS_BUILD_DIR -v /tmp:/tmp beniz/deepdetect_cpu
 
   #################################
   ## Install python dependencies ##
