@@ -3,14 +3,16 @@ dist: xenial
 language: python
 
 python:
-  - "3.4"
+  - "3.5"
 
 services:
   - docker
 
 before_install:
   - docker pull beniz/deepdetect_cpu
-  - docker run -d -p 8080:8080 -v $TRAVIS_BUILD_DIR:$TRAVIS_BUILD_DIR -v /tmp:/tmp beniz/deepdetect_cpu
+  - docker run -d -p 8080:8080 \
+                  -v $TRAVIS_BUILD_DIR:$TRAVIS_BUILD_DIR \
+                  -v /tmp:/tmp beniz/deepdetect_cpu
 
   #################################
   ## Install python dependencies ##
@@ -35,7 +37,7 @@ before_install:
   - python setup.py install
 
 script:
-#  PYTHONPATH=$PWD:$PYTHONPATH py.test --pep8 -m pep8 -n0;
+  PYTHONPATH=$PWD:$PYTHONPATH py.test --pep8 -m pep8 -n0;
   PYTHONPATH=$PWD:$PYTHONPATH py.test tests/
 
 after_success:
