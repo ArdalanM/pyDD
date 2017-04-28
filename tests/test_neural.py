@@ -21,8 +21,8 @@ test_size = 0.2
 n_classes = 10
 
 # dd params
-nn_params = {'host': '127.0.0.1', 'port': 8080, 'gpu': False}
-solver_param = {"iterations": 200, "base_lr": 0.01, "gamma": 0.1, "stepsize": 30, "momentum": 0.9}
+nn_params = {'host': 'localhost', 'port': 8080, 'gpu': False}
+solver_param = {"iterations": 100, "base_lr": 0.1, "gamma": 0.1, "stepsize": 10, "momentum": 0.9}
 # xgb_params = {'host': 'localhost', 'port': 8085}
 # booster_params = {"max_depth": 10, "subsample": 0.8, "eta": 0.3}
 
@@ -52,7 +52,7 @@ class TestSVM(object):
     def test_classification(self):
 
         params = nn_params.copy()
-        params.update({'nclasses': n_classes})
+        params.update({'nclasses': n_classes, 'layers':[20]})
         optimizer = GenericSolver(**solver_param)
         datasets.dump_svmlight_file(xtr, ytr, tr_f)
         datasets.dump_svmlight_file(xte, yte, te_f)
@@ -60,23 +60,23 @@ class TestSVM(object):
         clfs = [
             # array connector without validation set
             [xtr_arr, [], MLP(**params)],
-            [xtr_arr, [], LR(**params)],
+            # [xtr_arr, [], LR(**params)],
 
             # sparse array connector without validation set
             [xtr_sparse, [], MLP(**params)],
-            [xtr_sparse, [], LR(**params)],
+            # [xtr_sparse, [], LR(**params)],
 
             # svm connector without validation set
             [xtr_svm, [], MLP(**params)],
-            [xtr_svm, [], LR(**params)],
+            # [xtr_svm, [], LR(**params)],
 
             # array connector with validation set
             [xtr_arr, [xte_arr], MLP(**params)],
-            [xtr_arr, [xte_arr], LR(**params)],
+            # [xtr_arr, [xte_arr], LR(**params)],
 
             # svm connector with validation set
             [xtr_svm, [xte_svm], MLP(**params)],
-            [xtr_svm, [xte_svm], LR(**params)],
+            # [xtr_svm, [xte_svm], LR(**params)],
         ]
 
         for tr_data, te_data, clf in clfs:

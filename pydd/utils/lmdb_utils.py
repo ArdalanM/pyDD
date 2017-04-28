@@ -43,12 +43,12 @@ if __name__ == "__main__":
     from sklearn import datasets, preprocessing, model_selection
 
     # parameters
-    port = 8085
+    port = 8080
     gpu = False
     nclasses = 10
     seed = 1337
     test_size = 0.2
-    params = {'port': 8085, 'nclasses': nclasses, 'gpu': gpu}
+    params = {'port': port, 'nclasses': nclasses, 'gpu': gpu}
 
     # Create dataset
     X, Y = datasets.load_digits(n_class=params['nclasses'], return_X_y=True)
