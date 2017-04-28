@@ -32,6 +32,7 @@ import os
 import json
 import time
 import tempfile
+import numpy as np
 from pydd.utils import time_utils, os_utils
 from pydd.utils.dd_client import DD
 from pydd.utils.dd_utils import to_array

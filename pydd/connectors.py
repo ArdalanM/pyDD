@@ -5,7 +5,7 @@
 """
 
 import os
-
+import numpy as np
 
 class Connectors(object):
 

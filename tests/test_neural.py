@@ -13,38 +13,26 @@ from pydd.solver import GenericSolver
 from pydd.connectors import ArrayConnector, SVMConnector
 from sklearn import datasets, metrics, model_selection, preprocessing
 
-##############
-# parameters #
-##############
+
+# Parameters
 seed = 1337
 test_size = 0.2
 n_classes = 10
-
-# dd params
 nn_params = {'host': 'localhost', 'port': 8080, 'gpu': False}
 solver_param = {"iterations": 100, "base_lr": 0.1, "gamma": 0.1, "stepsize": 10, "momentum": 0.9}
 # xgb_params = {'host': 'localhost', 'port': 8085}
 # booster_params = {"max_depth": 10, "subsample": 0.8, "eta": 0.3}
 
-##################
-# create dataset #
-##################
+# Create dataset
 X, Y = datasets.load_digits(return_X_y=True, n_class=n_classes)
 X = preprocessing.StandardScaler().fit_transform(X)
 xtr, xte, ytr, yte = model_selection.train_test_split(X, Y, test_size=test_size, random_state=seed)
 tr_f = os.path.abspath('x_train.svm')
 te_f = os.path.abspath('x_test.svm')
 
-#####################
-# create connectors #
-#####################
-# array connector
+# Create Connectors
 xtr_arr, xte_arr = ArrayConnector(xtr, ytr), ArrayConnector(xte, yte)
-
-# svm connector
 xtr_svm, xte_svm = SVMConnector(tr_f), SVMConnector(te_f)
-
-# array sparse connector
 xtr_sparse, xte_sparse = ArrayConnector(csc_matrix(xtr), ytr), ArrayConnector(csc_matrix(xte), yte)
 
 
