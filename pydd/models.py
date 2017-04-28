@@ -6,9 +6,9 @@
 
 import os
 import shutil
+import numpy as np
 from scipy import sparse
 from sklearn.datasets import dump_svmlight_file
-
 from pydd.utils import time_utils
 from pydd.core import AbstractModels
 from pydd.utils.dd_utils import ndarray_to_sparse_strings, sparse_to_sparse_strings
@@ -474,7 +474,6 @@ class XGB(AbstractModels):
 
 if __name__ == "__main__":
     """Simple unit test"""
-    import numpy as np
     from sklearn import datasets, model_selection, preprocessing
     from pydd.solver import GenericSolver
     from pydd.connectors import ArrayConnector, SVMConnector
@@ -489,7 +488,7 @@ if __name__ == "__main__":
     port = 8080
     iteration=100
     lr=0.01
-    gpu=True
+    gpu=False
 
     X, y = datasets.load_digits(n_class=n_classes, return_X_y=True)
     X = preprocessing.StandardScaler().fit_transform(X)
