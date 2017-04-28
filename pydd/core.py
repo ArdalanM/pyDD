@@ -224,10 +224,10 @@ if __name__ == "__main__":
     service_parameters_input = {"connector": "svm"}
     service_parameters_output = {}
     service_parameters_mllib = {"nclasses": n_classes,
-                                "gpu": True, "gpuid": 0,
+                                "gpu": False,
                                 "template": "mlp", "layers": [100],
                                 "activation": "relu", "dropout": 0.5, "db": True}
-    clf = AbstractModels(host="localhost", port=8085, sname="sdfs-34-34-34", description="", mllib="caffe",
+    clf = AbstractModels(host="localhost", port=8085, description="", mllib="caffe",
                          service_parameters_input=service_parameters_input,
                          service_parameters_mllib=service_parameters_mllib,
                          service_parameters_output=service_parameters_output,
@@ -238,7 +238,7 @@ if __name__ == "__main__":
     train_parameters_output = {"measure": ["accp", "mcll"]},
     train_parameters_mllib = {
         "gpu": service_parameters_mllib["gpu"],
-        "solver": {"iterations": 100,
+        "solver": {"iterations": 1000,
                    "base_lr": 0.01,
                    "solver_type": "SGD"},
         "net": {"batch_size": 128},
