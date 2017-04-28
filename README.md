@@ -19,7 +19,6 @@ Make sure DeepDetect is up and running:
 
 * Classification from array:  
 ```python
-import numpy as np
 from pydd.solver import GenericSolver
 from pydd.models import MLP
 from pydd.connectors import ArrayConnector
@@ -34,8 +33,8 @@ xtr, xte, ytr, yte = model_selection.train_test_split(X, y, test_size=0.2)
 # create connector
 train_data, test_data = ArrayConnector(xtr, ytr), ArrayConnector(xte, yte)
 
-# Define models and class weights
-clf = MLP(port=8085, nclasses=n_classes, gpu=True)
+# create model
+clf = MLP(port=8085, nclasses=n_classes, gpu=False)
 solver = GenericSolver(iterations=10000, solver_type="SGD", base_lr=0.01, gamma=0.1, stepsize=30, momentum=0.9)
 
 logs = clf.fit(train_data, validation_data=[test_data], solver=solver)
@@ -45,20 +44,16 @@ report = metrics.classification_report(yte, yte_pred)
 
 - Classification from svm:  
 ```python
-import numpy as np
 from pydd.solver import GenericSolver
 from pydd.models import MLP
 from pydd.connectors import SVMConnector
-from sklearn import datasets, metrics, model_selection, preprocessing
 
 # create connector
 n_classes = 10
-train_data = SVMConnector(path="x_train.svm")
+train_data = SVMConnector(path="x_train.svm"), 
 test_data = SVMConnector(path="x_test.svm")
 
-
-# Define models and class weights
-clf = MLP(port=8085, nclasses=n_classes, gpu=True)
+clf = MLP(port=8085, nclasses=n_classes, gpu=False)
 solver = GenericSolver(iterations=10000, solver_type="SGD", base_lr=0.01, gamma=0.1, stepsize=30, momentum=0.9)
 
 logs = clf.fit(train_data, validation_data=[test_data], solver=solver)
