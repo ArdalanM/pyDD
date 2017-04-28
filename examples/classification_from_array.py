@@ -13,7 +13,7 @@ from sklearn import datasets, metrics, model_selection, preprocessing
 seed = 1337
 np.random.seed(seed)  # for reproducibility
 n_classes = 10
-params = {"port": 8085, "nclasses": n_classes, "gpu": True}
+params = {"port": 8080, "nclasses": n_classes, "gpu": False}
 split_params = {"test_size": 0.2, "random_state": seed}
 
 # create dataset
@@ -24,7 +24,7 @@ xtr, xte, ytr, yte = model_selection.train_test_split(X, y, **split_params)
 # Define models and class weights
 clf = MLP(**params)
 
-solver = GenericSolver(iterations=500, solver_type="SGD", base_lr=0.01, gamma=0.1, stepsize=30, momentum=0.9)
+solver = GenericSolver(iterations=100, solver_type="SGD", base_lr=0.01, gamma=0.1, stepsize=30, momentum=0.9)
 # one class weight value for each class
 class_weights = [1., 1., 1., 1., 1., 1., 1., 1., 1., 1]
 
