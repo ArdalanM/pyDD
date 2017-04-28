@@ -18,10 +18,11 @@ from sklearn import datasets, metrics, model_selection, preprocessing
 seed = 1337
 test_size = 0.2
 n_classes = 10
-nn_params = {'host': 'localhost', 'port': 8080, 'gpu': False}
-solver_param = {"iterations": 100, "base_lr": 0.1, "gamma": 0.1, "stepsize": 10, "momentum": 0.9}
+nn_params = {'host': 'localhost', 'port': 8080, 'gpu': True}
+solver_param = {"iterations": 300, "base_lr": 0.1, "gamma": 0.1, "stepsize": 50, "momentum": 0.9}
 # xgb_params = {'host': 'localhost', 'port': 8085}
 # booster_params = {"max_depth": 10, "subsample": 0.8, "eta": 0.3}
+np.random.seed(seed)
 
 # Create dataset
 X, Y = datasets.load_digits(return_X_y=True, n_class=n_classes)
