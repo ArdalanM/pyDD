@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 """
 DeepDetect Python client
 
 Licence:
-Copyright (c) 2015 Emmanuel Benazera, Evgeny BAZAROV <baz.evgenii@gmail.com>
+Copyright (c) 2015 Emmanuel Benazera
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -13,9 +12,85 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 """
 
-import requests
+try:
+    import urllib.request as urllib2
+except ImportError:
+    import urllib2
 
-DD_TIMEOUT = 2000  # seconds, for long blocking training calls, as needed
+try:
+    import http.client as httplib
+except ImportError:
+    import httplib
+
+import os.path
+import json
+import uuid
+import datetime
+
+VERBOSE = False
+DD_TIMEOUT = 86400  # 24h (86400 sec) call maximum :)
+
+
+def LOG(msg):
+    """Output a log message."""
+    # XXX: may want to use python log manager classes instead of this stupid print
+    if VERBOSE:
+        msg = str(datetime.datetime.now()) + ' ' + msg
+        print(msg)
+
+
+### Exception classes :
+
+class DDCommunicationError(Exception):
+    def __init__(self, url, http_method, headers, body, response=None):
+        self.msg = """DeepDetect Communication Error"""
+        self.http_method = http_method
+        self.req_headers = headers
+        self.req_body = body
+        self.url = url
+        self.res_headers = None
+        if response is not None:
+            self.res_headers = response.get_info()
+
+    def __str__(self):
+        msg = "%s %s\n" % (str(self.http_method), str(self.url))
+        for h, v in self.req_headers.iteritems():
+            msg += "%s:%s\n" % (h, v)
+        msg += "\n"
+        if self.req_body is not None:
+            msg += str(self.req_body)[:100]
+        msg += "\n"
+        msg += "--\n"
+        msg += str(self.res_headers)
+        msg += "\n"
+        return msg
+
+
+class DDDataError(Exception):
+    def __init__(self, url, http_method, headers, body, data=None):
+        self.msg = "DeepDetect Data Error"
+        self.http_method = http_method
+        self.req_headers = headers
+        self.req_body = body
+        self.url = url
+        self.data = data
+
+    def __str__(self):
+        msg = "%s %s\n" % (str(self.http_method), str(self.url))
+        if self.data is not None:
+            msg += str(self.data)[:100]
+        msg += "\n"
+        for h, v in self.req_headers.iteritems():
+            msg += "%s:%s\n" % (h, v)
+        msg += "\n"
+        if self.req_body is not None:
+            msg += str(self.req_body)
+        msg += "\n"
+        msg += "--\n"
+        msg += str(self.data)
+        msg += "\n"
+        return msg
+
 
 API_METHODS_URL = {
     "0.1": {
@@ -29,6 +104,7 @@ API_METHODS_URL = {
 
 class DD(object):
     """HTTP requests to the DeepDetect server
+
     """
 
     # return types
@@ -61,49 +137,142 @@ class DD(object):
         assert f == self.RETURN_PYTHON or f == self.RETURN_JSON or f == self.RETURN_NONE
         self.__returntype = f
 
-    def __return_data(self, r):
+    def __return_format(self, js):
         if self.__returntype == self.RETURN_PYTHON:
-            return r.json()
+            return json.loads(js.decode('utf-8'))
         elif self.__returntype == self.RETURN_JSON:
-            return r.text
+            return js
         else:
             return None
 
-    def get(self, method, json=None, params=None):
-        """GET to DeepDetect server """
-        url = self.__ddurl + method
-        r = requests.get(url=url, json=json, params=params, timeout=DD_TIMEOUT)
-        r.raise_for_status()
-        return self.__return_data(r)
+    def get(self, method, args=None):
+        """ GET to DeepDetect server """
+        u = self.__ddurl
+        u += method
+        headers = {}
+        if args is not None:
+            sep = "?"
+            for arg, argv in args.iteritems():
+                u += sep
+                sep = "&"
+                u += urllib2.quote(arg)
+                u += '='
+                if argv is not None:
+                    u += urllib2.quote(argv)
 
-    def put(self, method, json=None, params=None):
+        LOG("GET %s" % u)
+        response = None
+        try:
+            req = urllib2.Request(u)
+            response = urllib2.urlopen(req, timeout=DD_TIMEOUT)
+            jsonresponse = response.read()
+        except:
+            raise DDCommunicationError(u, "GET", headers, None, response)
+        LOG(jsonresponse)
+        try:
+            return self.__return_format(jsonresponse)
+        except:
+            raise DDDataError(u, "GET", headers, None, jsonresponse)
+
+    def put(self, method, body):
         """PUT request to DeepDetect server"""
-        url = self.__ddurl + method
-        r = requests.put(url=url, json=json, params=params, timeout=DD_TIMEOUT)
-        r.raise_for_status()
-        return self.__return_data(r)
 
-    def post(self, method, json=None, params=None):
+        LOG("PUT %s\n%s" % (method, body))
+        r = None
+        u = ""
+        headers = {}
+        try:
+            u = self.__ddurl + method
+            if self.__proto == self.__HTTP:
+                #    u = "http://%s:%s%s"%(self.__host,self.__port,method)
+                c = httplib.HTTPConnection(self.__host, self.__port, timeout=DD_TIMEOUT)
+            else:
+                #    u = "https://%s:%s%s"%(self.__host,self.__port,method)
+                c = httplib.HTTPSConnection(self.__host, self.__port, timeout=DD_TIMEOUT)
+            c.request('PUT', method, body, headers)
+            r = c.getresponse()
+            data = r.read()
+        except:
+            raise DDCommunicationError(u, "PUT", headers, body, r)
+        LOG(data)
+        try:
+            return self.__return_format(data)
+        except:
+            raise DDDataError(u, "PUT", headers, body, data)
+
+    def post(self, method, body):
         """POST request to DeepDetect server"""
-        url = self.__ddurl + method
-        r = requests.post(url=url, json=json, params=params, timeout=DD_TIMEOUT)
-        r.raise_for_status()
-        return self.__return_data(r)
 
-    def delete(self, method, json=None, params=None):
+        r = None
+        u = ""
+        headers = {}
+        try:
+            u = self.__ddurl + method
+            if self.__proto == self.__HTTP:
+                LOG("curl -X POST 'http://%s:%s%s' -d '%s'" % (self.__host,
+                                                               self.__port,
+                                                               method,
+                                                               body))
+                c = httplib.HTTPConnection(self.__host, self.__port, timeout=DD_TIMEOUT)
+            else:
+                LOG("curl -k -X POST 'https://%s:%s%s' -d '%s'" % (self.__host,
+                                                                   self.__port,
+                                                                   method,
+                                                                   body))
+                c = httplib.HTTPSConnection(self.__host, self.__port, timeout=DD_TIMEOUT)
+            c.request('POST', method, body, headers)
+            r = c.getresponse()
+            data = r.read()
+
+        except:
+            raise DDCommunicationError(u, "POST", headers, body, r)
+
+        # LOG(data)
+        try:
+            return self.__return_format(data)
+        except:
+            import traceback
+            print(traceback.format_exc())
+
+            raise DDDataError(u, "POST", headers, body, data)
+
+    def delete(self, method):
         """DELETE request to DeepDetect server"""
-        url = self.__ddurl + method
-        r = requests.delete(url=url, json=json, params=params, timeout=DD_TIMEOUT)
-        r.raise_for_status()
-        return self.__return_data(r)
+
+        LOG("DELETE %s" % (method))
+        r = None
+        u = ""
+        body = ""
+        headers = {}
+        try:
+            u = self.__ddurl + method
+            if self.__proto == self.__HTTP:
+                c = httplib.HTTPConnection(self.__host, self.__port, timeout=DD_TIMEOUT)
+            else:
+                c = httplib.HTTPSConnection(self.__host, self.__port, timeout=DD_TIMEOUT)
+            c.request('DELETE', method, body, headers)
+            r = c.getresponse()
+            data = r.read()
+        except:
+            raise DDCommunicationError(u, "DELETE", headers, None, r)
+
+        LOG(data)
+        try:
+            return self.__return_format(data)
+        except:
+            raise DDDataError(u, "DELETE", headers, None, data)
 
     # API methods
+
     def info(self):
         """Info on the DeepDetect server"""
         return self.get(self.__urls["info"])
 
-    # API services
-    def put_service(self, sname, model, description, mllib, parameters_input, parameters_mllib, parameters_output, mltype='supervised'):
+    # - PUT services
+    # - GET services
+    # - DELETE services
+    def put_service(self, sname, model, description, mllib, parameters_input, parameters_mllib, parameters_output,
+                    mltype='supervised'):
         """
         Create a service
         Parameters:
@@ -115,14 +284,10 @@ class DD(object):
         parameters_mllib -- dict ML library parameters
         parameters_output -- dict of output parameters
         """
-        data = {"description": description,
-                "mllib": mllib,
-                "type": mltype,
-                "parameters": {"input": parameters_input,
-                               "mllib": parameters_mllib,
-                               "output": parameters_output},
+        body = {"description": description, "mllib": mllib, "type": mltype,
+                "parameters": {"input": parameters_input, "mllib": parameters_mllib, "output": parameters_output},
                 "model": model}
-        return self.put(self.__urls["services"] + '/%s' % sname, json=data)
+        return self.put(self.__urls["services"] + '/%s' % sname, json.dumps(body))
 
     def get_service(self, sname):
         """
@@ -139,10 +304,15 @@ class DD(object):
         sname -- service name as a resource
         clear -- 'full','lib' or 'mem', optionally clears model repository data
         """
-        data = {"clear": clear} if clear else None
-        return self.delete(self.__urls["services"] + '/%s' % sname, json=data)
+        qs = self.__urls["services"] + '/%s' % sname
+        if clear:
+            qs += '?clear=' + clear
+        return self.delete(qs)
 
-    # API train
+    # PUT/POST /train
+    # GET /train
+    # DELETE /train
+
     def post_train(self, sname, data, parameters_input, parameters_mllib, parameters_output, async=True):
         """
         Creates a training job
@@ -154,13 +324,10 @@ class DD(object):
         parameters_mllib -- dict ML library parameters
         parameters_output -- dict of output parameters
         """
-        data = {"service": sname,
-                "async": async,
-                "parameters": {"input": parameters_input,
-                               "mllib": parameters_mllib,
-                               "output": parameters_output},
+        body = {"service": sname, "async": async,
+                "parameters": {"input": parameters_input, "mllib": parameters_mllib, "output": parameters_output},
                 "data": data}
-        return self.post(self.__urls["train"], json=data)
+        return self.post(self.__urls["train"], json.dumps(body))
 
     def get_train(self, sname, job=1, timeout=0, measure_hist=False):
         """
@@ -171,12 +338,10 @@ class DD(object):
         timeout -- timeout before obtaining the job status
         measure_hist -- whether to return the full measure history (e.g. for plotting)
         """
-        params = {"service": sname,
-                  "job": str(job),
-                  "timeout": str(timeout)}
+        qs = self.__urls["train"] + "?service=" + sname + "&job=" + str(job) + "&timeout=" + str(timeout)
         if measure_hist:
-            params["parameters.output.measure_hist"] = measure_hist
-        return self.get(self.__urls["train"], params=params)
+            qs += "&parameters.output.measure_hist=true"
+        return self.get(qs)
 
     def delete_train(self, sname, job=1):
         """
@@ -185,11 +350,11 @@ class DD(object):
         sname -- service name as a resource
         job -- job number on the service
         """
-        params = {"service": sname,
-                  "job": str(job)}
-        return self.delete(self.__urls["train"], params=params)
+        qs = self.__urls["train"] + "?service=" + sname + "&job=" + str(job)
+        return self.delete(qs)
 
-    # API predict
+    # POST /predict
+
     def post_predict(self, sname, data, parameters_input, parameters_mllib, parameters_output):
         """
         Makes prediction from data and model
@@ -200,12 +365,11 @@ class DD(object):
         parameters_mllib -- dict ML library parameters
         parameters_output -- dict of output parameters
         """
-        data = {"service": sname,
-                "parameters": {"input": parameters_input,
-                               "mllib": parameters_mllib,
-                               "output": parameters_output},
+        body = {"service": sname,
+                "parameters": {"input": parameters_input, "mllib": parameters_mllib, "output": parameters_output},
                 "data": data}
-        return self.post(self.__urls["predict"], json=data)
+        return self.post(self.__urls["predict"], json.dumps(body))
+
 
 # test
 if __name__ == '__main__':
