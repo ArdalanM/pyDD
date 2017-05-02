@@ -146,7 +146,8 @@ class MLP(AbstractModels):
                                       self.train_parameters_output, display_metric_interval, async)
 
         if train_data.lmdb_path:
-            os.remove(os.path.join(self.repository, "vocab.dat"))
+            if os.path.exists(os.path.join(self.repository, "vocab.dat")):
+                os.remove(os.path.join(self.repository, "vocab.dat"))
             shutil.copy(train_data.vocab_path, os.path.join(self.repository, "vocab.dat"))
 
         return self.train_logs
