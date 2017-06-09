@@ -10,17 +10,11 @@ services:
 
 before_install:
 
-#  # disable ipv6 so that 'localhost` point to `127.0.0.1`
-#  - sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1
-#  - sudo sysctl -w net.ipv6.conf.default.disable_ipv6=1
-#  - ip addr # for confirmation. can be skipped
-
+  # Setup DeepDetect
   - docker pull beniz/deepdetect_cpu
   - docker run -d -p 8080:8080 -v $TRAVIS_BUILD_DIR:$TRAVIS_BUILD_DIR -v /tmp:/tmp beniz/deepdetect_cpu
 
-  #################################
-  ## Install python dependencies ##
-  #################################
+  # Install python dependencies
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
     else
