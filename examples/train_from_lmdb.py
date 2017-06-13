@@ -16,7 +16,7 @@ from sklearn import datasets, metrics, model_selection, preprocessing
 seed = 1337
 np.random.seed(seed)  # for reproducibility
 n_classes = 10
-params = {"port": 8080, "nclasses": n_classes, "gpu": False}
+params = {"port": 8080, "nclasses": n_classes, "gpu": True}
 split_params = {"test_size": 0.2, "random_state": seed}
 
 folder = "train-from-lmdb"
