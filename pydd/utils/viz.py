@@ -29,13 +29,15 @@ METRICS = [
     'smoothed_loss',
 ]
 
+
 def get_args():
     parser = argparse.ArgumentParser('data viz')
     parser.add_argument("--log_dir", type=str, default='/mnt/storagebox/sharedData/poc-kaidee/logs.json', help="folder where logs are located")
     args = parser.parse_args()
     return args
 
-def follow(thefile):
+
+def stream_read(thefile):
     """Iterator reading a file (line by line) and wait for new lines"""
     while True:
         line = thefile.readline()
@@ -43,6 +45,11 @@ def follow(thefile):
             time.sleep(0.1) # Sleep briefly
             continue
         yield line
+
+
+def batch_read(thefile):
+    return thefile.readlines()
+
 
 def main():
     opt = get_args()
@@ -59,27 +66,54 @@ def main():
     # where the monitoring begins
     curr_iter, prev_iter = 0, 0
     with open(opt.log_dir) as f:
-        generator = follow(f)
+
+        # Batch read
+        dic_metrics = {k:[] for k in METRICS}
+        iterations = []
+        lines = batch_read(f)
+        for line in lines:
+            try:
+                line = json.loads(line.replace('\'', '\"'))
+                curr_iter = line['iteration']
+
+                # print(line)
+                if curr_iter > prev_iter:
+                    iterations.append(curr_iter)
+                    prev_iter = curr_iter
+
+                    for metric in METRICS:
+                        if metric in line:
+                            dic_metrics[metric].append(line[metric])
+            except:
+                pass
+
+        for metric in METRICS:
+            x = np.array(iterations)
+            y = np.array(dic_metrics[metric])
+
+            if len(y) > 0:
+                vis.line(y, x, win=dic_plots[metric], update='append')
+        # END OF Batch read
+
+        # stream read
+        print("stream mode...")
+        generator = stream_read(f)
         while True:
             line = generator.__next__()
 
             try:
                 line = json.loads(line.replace('\'', '\"'))
                 curr_iter = line['iteration']
-                print(line)
+                if curr_iter > prev_iter:
+                    prev_iter = curr_iter
+                    for metric in METRICS:
+                        if metric in line:
+                            x = np.array([curr_iter])
+                            y = np.array([line[metric]])
+                            vis.line(y, x, win=dic_plots[metric], update='append')
             except:
                 pass
-
-            if curr_iter > prev_iter:
-
-                # Fill the plots as new values are written to log files
-                for metric in METRICS:
-                    if metric in line:
-                        value = line[metric]
-                        vis.line(np.array([value]), np.array([curr_iter]), win=dic_plots[metric], update='append')
-
-            prev_iter = curr_iter
-
+        # END OF stream read
 
 if __name__ == "__main__":
     main()
