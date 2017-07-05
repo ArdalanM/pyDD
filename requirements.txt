@@ -1,3 +1,10 @@
 numpy
 scipy
 scikit-learn
+requests
+six
+pillow
+tornado
+pyzmq
+six
+visdom

@@ -5,7 +5,7 @@ setup(name='pyDD',
       version='0.1.2',
       description='Python binding for DeepDetect',
       author='Ardalan MEHRANI',
-      author_email='ardalan.mehrani@iosquare.com',
+      author_email='ardalan77400@gmail.com',
       url='https://github.com/ArdalanM/pyDD',
       download_url='https://github.com/ArdalanM/pyDD',
       license='MIT',
@@ -21,4 +21,10 @@ setup(name='pyDD',
                    ],
       install_requires=[],
       extras_require={},
-      packages=find_packages())
+      packages=find_packages(),
+      entry_points={
+          'console_scripts': [
+              'pydd = pydd.utils.viz:main'
+          ]},
+
+      )

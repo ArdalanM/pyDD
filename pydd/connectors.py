@@ -5,7 +5,7 @@
 """
 
 import os
-
+import numpy as np
 
 class Connectors(object):
 
@@ -36,6 +36,21 @@ class SVMConnector(Connectors):
         super(SVMConnector, self).__init__(path=path,
                                            lmdb_path=lmdb_path,
                                            vocab_path=vocab_path)
+
+
+class LMDBConnector(Connectors):
+    """
+    """
+    def __init__(self, path, lmdb_path="", vocab_path=""):
+        self.name = "lmdb"
+
+        if path:
+            if not os.path.exists(path):
+                print("warning: {} does not exist".format(path))
+
+        super(LMDBConnector, self).__init__(path=path,
+                                            lmdb_path=lmdb_path,
+                                            vocab_path=vocab_path)
 
 
 class ArrayConnector(Connectors):
