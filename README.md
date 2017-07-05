@@ -1,8 +1,8 @@
 pyDD: python binding for [DeepDetect](https://github.com/beniz/deepdetect)
 ============================================================================
-<!--[![Build Status](https://travis-ci.org/ArdalanM/pyLightGBM.svg?branch=feat_ci)](https://travis-ci.org/ArdalanM/pyLightGBM)-->
-<!--[![Coverage Status](https://coveralls.io/repos/github/ArdalanM/pyLightGBM/badge.svg?branch=master)](https://coveralls.io/github/ArdalanM/pyLightGBM?branch=master)-->
-<!--[![Packagist](https://img.shields.io/packagist/l/doctrine/orm.svg)]()-->
+[![Build Status](https://travis-ci.org/ArdalanM/pyLightGBM.svg?branch=feat_ci)](https://travis-ci.org/ArdalanM/pyLightGBM)
+[![Coverage Status](https://coveralls.io/repos/github/ArdalanM/pyLightGBM/badge.svg?branch=master)](https://coveralls.io/github/ArdalanM/pyLightGBM?branch=master)
+[![Packagist](https://img.shields.io/packagist/l/doctrine/orm.svg)]()
 
 TO DO:
  - Support other DeepDetect connectors: `image`, `csv`, `text`
@@ -19,7 +19,6 @@ Make sure DeepDetect is up and running:
 
 * Classification from array:  
 ```python
-import numpy as np
 from pydd.solver import GenericSolver
 from pydd.models import MLP
 from pydd.connectors import ArrayConnector
@@ -34,8 +33,8 @@ xtr, xte, ytr, yte = model_selection.train_test_split(X, y, test_size=0.2)
 # create connector
 train_data, test_data = ArrayConnector(xtr, ytr), ArrayConnector(xte, yte)
 
-# Define models and class weights
-clf = MLP(port=8085, nclasses=n_classes, gpu=True)
+# create model
+clf = MLP(port=8085, nclasses=n_classes, gpu=False)
 solver = GenericSolver(iterations=10000, solver_type="SGD", base_lr=0.01, gamma=0.1, stepsize=30, momentum=0.9)
 
 logs = clf.fit(train_data, validation_data=[test_data], solver=solver)
@@ -45,20 +44,16 @@ report = metrics.classification_report(yte, yte_pred)
 
 - Classification from svm:  
 ```python
-import numpy as np
 from pydd.solver import GenericSolver
 from pydd.models import MLP
 from pydd.connectors import SVMConnector
-from sklearn import datasets, metrics, model_selection, preprocessing
 
 # create connector
 n_classes = 10
-train_data = SVMConnector(path="x_train.svm")
+train_data = SVMConnector(path="x_train.svm"), 
 test_data = SVMConnector(path="x_test.svm")
 
-
-# Define models and class weights
-clf = MLP(port=8085, nclasses=n_classes, gpu=True)
+clf = MLP(port=8085, nclasses=n_classes, gpu=False)
 solver = GenericSolver(iterations=10000, solver_type="SGD", base_lr=0.01, gamma=0.1, stepsize=30, momentum=0.9)
 
 logs = clf.fit(train_data, validation_data=[test_data], solver=solver)
