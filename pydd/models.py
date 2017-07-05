@@ -530,7 +530,3 @@ if __name__ == "__main__":
 
     os_utils._remove_files([tr_f, te_f])
 
-<<<<<<< HEAD
-    os_utils._remove_files([tr_f, te_f])
-=======
->>>>>>> 9f09ac0d21379a51380acf0a7724ec99f9c96f44
