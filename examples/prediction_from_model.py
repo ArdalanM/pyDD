@@ -52,7 +52,6 @@ report = metrics.classification_report(yte, yte_pred)
 print(report)
 
 # Predict using another file
-#params = {'host': 'localhost', 'port': 8085, 'nclasses': 10, 'template': None}
 params = {'host': 'localhost', 'port': 8085, 'nclasses': 10, 'weights': os.path.join(model_repo, 'model_iter_400.caffemodel'), 'template': None}
 clf = MLP(sname=sname, repository=model_repo, **params)
 ytr_pred, yte_pred = clf.predict(xtr_svm), clf.predict(xte_svm)
