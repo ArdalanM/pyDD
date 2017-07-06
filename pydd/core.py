@@ -122,7 +122,9 @@ class AbstractModels(AbstractDDCalls):
         super(AbstractModels, self).__init__(self.host, self.port)
 
         if self.sname:
-            self.delete_service(self.sname, clear="mem")
+            for service in self.get_info()['head']['services']:
+                if service['name'] == self.sname:
+                    self.delete_service(self.sname, clear="mem")
         else:
             self.sname = "pyDD_{}".format(time_utils.fulltimestamp())
             self.description = self.sname
