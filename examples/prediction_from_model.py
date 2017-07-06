@@ -41,7 +41,7 @@ datasets.dump_svmlight_file(xte, yte, te_f)
 xtr_svm, xte_svm = SVMConnector(tr_f), SVMConnector(te_f)
 
 # train model
-params = {'host': host, 'port': port, 'nclasses': nclasses, 'layers': [100, 100]}
+params = {'host': host, 'port': port, 'nclasses': nclasses, 'layers': [100]}
 optimizer = GenericSolver(solver_type='SGD', iterations=500, base_lr=0.1, snapshot=100)
 clf = MLP(sname=sname, repository=model_repo, **params)
 clf.fit(xtr_svm, validation_data=[xte_svm, xtr_svm], solver=optimizer)
@@ -55,8 +55,7 @@ report = metrics.classification_report(yte, yte_pred)
 print(report)
 
 # Predict using another file
-params = {'host': host, 'port': port, 'nclasses': nclasses, 'template': None, 'weights': os.path.join(model_repo, 'model_iter_400.caffemodel')}
-
+params = {'host': host, 'port': port, 'nclasses': nclasses, 'weights': os.path.join(model_repo, 'model_iter_400.caffemodel'), 'template': None}
 clf = MLP(sname=sname, repository=model_repo, **params)
 ytr_pred, yte_pred = clf.predict(xtr_svm), clf.predict(xte_svm)
 report = metrics.classification_report(yte, yte_pred)
