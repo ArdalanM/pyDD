@@ -18,7 +18,7 @@ from sklearn import datasets, metrics, model_selection, preprocessing
 seed = 1337
 test_size = 0.2
 n_classes = 10
-nn_params = {'host': 'localhost', 'port': 8080, 'gpu': False}
+nn_params = {'host': 'localhost', 'port': 8080, 'gpu': True}
 solver_param = {"iterations": 500, "base_lr": 0.1, "gamma": 0.1, "stepsize": 50, "momentum": 0.9}
 # xgb_params = {'host': 'localhost', 'port': 8085}
 # booster_params = {"max_depth": 10, "subsample": 0.8, "eta": 0.3}
@@ -41,7 +41,7 @@ class TestSVM(object):
     def test_classification(self):
 
         params = nn_params.copy()
-        params.update({'nclasses': n_classes, 'layers':[20]})
+        params.update({'nclasses': n_classes, 'layers':[50]})
         optimizer = GenericSolver(**solver_param)
         datasets.dump_svmlight_file(xtr, ytr, tr_f)
         datasets.dump_svmlight_file(xte, yte, te_f)
