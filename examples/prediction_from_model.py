@@ -54,6 +54,13 @@ ytr_pred, yte_pred = clf.predict(xtr_svm), clf.predict(xte_svm)
 report = metrics.classification_report(yte, yte_pred)
 print(report)
 
+# Predict using another file
+params = {'host': 'localhost', 'port': 8085, 'nclasses': 10, 'weights': os.path.join(model_repo, 'model_iter_400.caffemodel'), 'template': None}
+clf = MLP(sname=sname, repository=model_repo, **params)
+ytr_pred, yte_pred = clf.predict(xtr_svm), clf.predict(xte_svm)
+report = metrics.classification_report(yte, yte_pred)
+print(report)
+
 # clean created files/folders
 os_utils._remove_files([tr_f, te_f])
 os_utils._remove_dirs([model_repo])
