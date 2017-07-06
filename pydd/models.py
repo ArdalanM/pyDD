@@ -65,13 +65,12 @@ class MLP(AbstractModels):
         self.db = db
         self.tmp_dir = tmp_dir
 
-        self.model = {"templates": self.templates, "repository": self.repository}
+        self.model = {"repository": self.repository}
         if self.weights:
             self.model.update({"weights": self.weights})
 
         self.service_parameters_input = {"connector": self.connector}
         self.service_parameters_output = {}
-        self.model = {"repository": self.repository}
         self.service_parameters_mllib = {"nclasses": self.nclasses, "ntargets": self.ntargets,
                                         "resume": self.resume, "layers": self.layers,
                                         "activation": self.activation, "gpu": self.gpu,
