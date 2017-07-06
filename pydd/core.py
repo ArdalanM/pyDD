@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#. -*- coding: utf-8 -*-
 """
 @author: Ardalan MEHRANI <ardalan77400@gmail.com>
 @brief:
@@ -123,7 +123,7 @@ class AbstractModels(AbstractDDCalls):
 
         if self.sname:
             for service in self.get_info()['head']['services']:
-                if service['name'] == self.sname:
+                if service['name'] == self.sname.lower(): # DD lowercases services' name
                     self.delete_service(self.sname, clear="mem")
         else:
             self.sname = "pyDD_{}".format(time_utils.fulltimestamp())
