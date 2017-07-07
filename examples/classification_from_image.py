@@ -39,11 +39,11 @@ for i in range(X.shape[0]):
     imsave(os.path.join(img_dir, str(y[i]), str(i) + '.jpeg'), X[i].reshape((8,8)))
 
 # Define models and class weights
-data = ImageConnector(path=img_dir)
+data = ImageConnector(path=img_dir, bw=True)
 params.update({'connector': data})
 clf = MLP(**params)
 
-solver = GenericSolver(iterations=500, solver_type="SGD", base_lr=0.01, gamma=0.1, stepsize=30, momentum=0.9)
+solver = GenericSolver(iterations=3000, solver_type="SGD", base_lr=0.001, gamma=0.1, stepsize=1000, momentum=0.9)
 # one class weight value for each class
 class_weights = [1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]
 logs = clf.fit(data,  solver=solver, class_weights=class_weights, batch_size=8)
