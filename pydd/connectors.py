@@ -100,12 +100,16 @@ class ImageConnector(Connectors):
     """
     TODO: finish this connector
     """
-    def __init__(self, path, lmdb_path="", width=227, height=227, bw=False, mean=128, std=128, test_split=0, shuffle=False, seed=-1):
+    def __init__(self, path, lmdb_path="", width=227, height=227, bw=False, mean=128, std=128, test_split=0.1, shuffle=False, seed=-1):
         self.name = 'image'
 
         if path:
             if not os.path.exists(path):
                 print("warning: {} does not exist".format(path))
+
+        super(ImageConnector, self).__init__(path=path,
+                                             lmdb_path=lmdb_path,
+                                            )
 
         self.service_parameters_input.update({'width': width,
                                               'height': height,
@@ -123,7 +127,3 @@ class ImageConnector(Connectors):
                                               'bw': bw,
                                               'mean': mean,
                                               'std': std})
-
-        super(ImageConnector, self).__init__(path=path,
-                                             lmdb_path=lmdb_path,
-                                             )
