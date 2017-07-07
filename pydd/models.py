@@ -79,7 +79,13 @@ class MLP(AbstractModels):
                                         "weights": self.weights,
                                         "db": self.db}
 
-        self.service_parameters_input = {"connector": self.connector if isinstance(self.connector, str) else connector.name}
+        if isinstance(self.connector, str):
+            self.service_parameters_input = {"connector": self.connector}
+        else:
+            self.service_parameters_input = {"connector": self.connector.name,
+                "width": self.connector.service_parameters_input["width"],
+                "height": self.connector.service_parameters_input["height"]
+            }
         if not self.resume:
             self.model.update({"templates": self.templates})
             self.service_parameters_mllib.update({"template": self.template})
