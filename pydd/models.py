@@ -79,29 +79,8 @@ class MLP(AbstractModels):
                                         "weights": self.weights,
                                         "db": self.db}
 
-        if isinstance(self.connector, str):
-            self.service_parameters_input = {"connector": self.connector}
-        else:
-            bw = self.connector.service_parameters_input["bw"]
-            mean = self.connector.service_parameters_input["mean"]
-            std = self.connector.service_parameters_input["std"]            
-            self.service_parameters_input = {"connector": self.connector.name,
-                "width": self.connector.service_parameters_input["width"],
-                "height": self.connector.service_parameters_input["height"]
-            }
+        self.service_parameters_input.update(get_connector_parameters(connector))
 
-            if self.mllib == 'caffe':
-                self.service_parameters_input.update('bw': bw)
-                if isinstance(mean, list):
-                    self.service_parameters_input.update('mean': mean)
-                       
-            elif self.mllib == 'tensorflow':
-                self.service_parameters_input.update('std': std)
-                self.service_parameters_input.update('bw': bw)
-
-                if isinstance(mean, float):
-                    self.service_parameters_input.update('mean': mean)
-                
         if not self.resume:
             self.model.update({"templates": self.templates})
             self.service_parameters_mllib.update({"template": self.template})
@@ -115,6 +94,33 @@ class MLP(AbstractModels):
                                   service_parameters_output=self.service_parameters_output,
                                   service_parameters_mllib=self.service_parameters_mllib,
                                   model=self.model, tmp_dir=self.tmp_dir)
+    
+    def get_connector_parameters(self, connector):
+        # If the connector is not an image
+        if isinstance(self.connector, str):
+            parameters_input = {"connector": self.connector}
+        # If the connector is an image
+        else:
+            # Differiate paraameters if Caffe or Tensorflow is used
+            bw = connector.service_parameters_input["bw"]
+            mean = connector.service_parameters_input["mean"]
+            std = connector.service_parameters_input["std"]
+            parameters_input = {"connector": connector.name,
+                "width": connector.service_parameters_input["width"],
+                "height": connector.service_parameters_input["height"]
+            }
+
+            if self.mllib == 'caffe':
+                parameters_input.update({"bw": bw})
+                if isinstance(mean, list):
+                    parameters_input.update({"mean": mean})
+                        
+            elif self.mllib == "tensorflow":
+                parameters_input.update({"std": std})
+                if isinstance(mean, float):
+                    parameters_input.update({"mean": mean})
+        
+        return parameters_input
 
     def fit(self, train_data, validation_data=[], solver=None, batch_size=128, class_weights=None,
             metrics=["mcll", "accp"], async=True, display_metric_interval=1):
@@ -122,6 +128,10 @@ class MLP(AbstractModels):
         # df: True otherwise core dump when training on svm data
         self.train_parameters_input = {"db": True}
         self.train_parameters_input.update(train_data.train_parameters_input)
+        # Remove black and white parameteer if the mllib used is tensorflow
+        if self.mllib == "tensorflow" and data.name == "image:
+            del self.train_parameters_input['bw']
+
 
         self.train_parameters_output = {"measure": metrics}
 
@@ -179,7 +189,7 @@ class MLP(AbstractModels):
     def predict_proba(self, connector, batch_size=128):
 
         nclasses = self.service_parameters_mllib["nclasses"]
-        self.predict_parameters_input = connector.predict_parameters_input
+        self.predict_parameters_input.update(get_connector_parameters(connector))
 
         self.predict_parameters_mllib = {
             "gpu": self.service_parameters_mllib["gpu"],
