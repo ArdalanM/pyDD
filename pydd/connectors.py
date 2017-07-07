@@ -100,7 +100,7 @@ class ImageConnector(Connectors):
     """
     TODO: finish this connector
     """
-    def __init__(self, path, lmdb_path, width=227, height=227, bw=False, mean=128, std=128, test_split=0, shuffle=False, seed=-1):
+    def __init__(self, path, lmdb_path="", width=227, height=227, bw=False, mean=128, std=128, test_split=0, shuffle=False, seed=-1):
         self.name = 'image'
 
         if path:
