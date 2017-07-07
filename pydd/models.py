@@ -79,7 +79,7 @@ class MLP(AbstractModels):
                                         "weights": self.weights,
                                         "db": self.db}
 
-        self.service_parameters_input = {"connector": self.connector if isinstance(self.connector, string) else connector.name}
+        self.service_parameters_input = {"connector": self.connector if isinstance(self.connector, str) else connector.name}
         if not self.resume:
             self.model.update({"templates": self.templates})
             self.service_parameters_mllib.update({"template": self.template})
@@ -249,7 +249,7 @@ class LR(AbstractModels):
             self.model.update({"templates": self.templates})
             self.service_parameters_mllib.update({"template": self.template})
 
-        self.service_parameters_input = {"connector": self.connector if isinstance(self.connector, string) else connector.name}
+        self.service_parameters_input = {"connector": self.connector if isinstance(self.connector, str) else connector.name}
         if self.gpu:
             self.service_parameters_mllib.update({"gpuid": self.gpuid})
 
@@ -417,7 +417,7 @@ class XGB(AbstractModels):
 
         self.model = {"repository": self.repository}
         self.service_parameters_mllib = {"nclasses": self.nclasses, "ntargets": self.ntargets}
-        self.service_parameters_input = {"connector": self.connector if isinstance(self.connector, string) else connector.name}
+        self.service_parameters_input = {"connector": self.connector if isinstance(self.connector, str) else connector.name}
         self.service_parameters_output = {}
 
         super(XGB, self).__init__(host=self.host, port=self.port, sname=self.sname,
