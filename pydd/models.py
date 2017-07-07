@@ -82,10 +82,26 @@ class MLP(AbstractModels):
         if isinstance(self.connector, str):
             self.service_parameters_input = {"connector": self.connector}
         else:
+            bw = self.connector.service_parameters_input["bw"]
+            mean = self.connector.service_parameters_input["mean"]
+            std = self.connector.service_parameters_input["std"]            
             self.service_parameters_input = {"connector": self.connector.name,
                 "width": self.connector.service_parameters_input["width"],
                 "height": self.connector.service_parameters_input["height"]
             }
+
+            if self.mllib == 'caffe':
+                self.service_parameters_input.update('bw': bw)
+                if isinstance(mean, list):
+                    self.service_parameters_input.update('mean': mean)
+                       
+            elif self.mllib == 'tensorflow':
+                self.service_parameters_input.update('std': std)
+                self.service_parameters_input.update('bw': bw)
+
+                if isinstance(mean, float):
+                    self.service_parameters_input.update('mean': mean)
+                
         if not self.resume:
             self.model.update({"templates": self.templates})
             self.service_parameters_mllib.update({"template": self.template})
