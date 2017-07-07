@@ -6,7 +6,7 @@
 import os
 import shutil
 import tempfile
-from pydd.models import LR
+from pydd.models import MLP
 from pydd.solver import GenericSolver
 from pydd.connectors import SVMConnector
 
@@ -22,7 +22,7 @@ def create_lmdb_from_svm(svm_path, lmdb_path, vocab_path=None, host='localhost',
     train_data = SVMConnector(path=svm_path)
     optimizer = GenericSolver(solver_type='SGD', base_lr=0.01, iterations=1)
 
-    clf = LR(host=host, port=port, nclasses=nclasses, gpu=gpu, repository=tmp_folder)
+    clf = MLP(host=host, port=port, nclasses=nclasses, gpu=gpu, repository=tmp_folder)
     clf.fit(train_data, solver=optimizer)
 
     shutil.move(os.path.join(tmp_folder, "train.lmdb"), lmdb_path)
@@ -43,12 +43,12 @@ if __name__ == "__main__":
     from sklearn import datasets, preprocessing, model_selection
 
     # parameters
-    port = 8085
-    gpu = True
+    port = 8080
+    gpu = False
     nclasses = 10
     seed = 1337
     test_size = 0.2
-    params = {'port': 8085, 'nclasses': nclasses, 'gpu': True}
+    params = {'port': port, 'nclasses': nclasses, 'gpu': gpu}
 
     # Create dataset
     X, Y = datasets.load_digits(n_class=params['nclasses'], return_X_y=True)
@@ -71,7 +71,7 @@ if __name__ == "__main__":
     te_data = SVMConnector(path=tr_svm_f, lmdb_path=tr_lmdb_f)
 
     optimizer = GenericSolver(solver_type='SGD', base_lr=0.01, iterations=100)
-    clf = LR(**params)
+    clf = MLP(**params)
     clf.fit(tr_data, validation_data=[te_data], solver=optimizer)
 
     y_pred_lmdb = clf.predict_proba(te_data)

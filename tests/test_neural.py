@@ -13,38 +13,27 @@ from pydd.solver import GenericSolver
 from pydd.connectors import ArrayConnector, SVMConnector
 from sklearn import datasets, metrics, model_selection, preprocessing
 
-##############
-# parameters #
-##############
+
+# Parameters
 seed = 1337
 test_size = 0.2
 n_classes = 10
-
-# dd params
-nn_params = {'host': 'localhost', 'port': 8085, 'gpu': True}
-solver_param = {"iterations": 200, "base_lr": 0.01, "gamma": 0.1, "stepsize": 30, "momentum": 0.9}
+nn_params = {'host': 'localhost', 'port': 8080, 'gpu': False}
+solver_param = {"iterations": 1000, "base_lr": 0.1, "gamma": 0.1, "stepsize": 50, "momentum": 0.9}
 # xgb_params = {'host': 'localhost', 'port': 8085}
 # booster_params = {"max_depth": 10, "subsample": 0.8, "eta": 0.3}
+np.random.seed(seed)
 
-##################
-# create dataset #
-##################
+# Create dataset
 X, Y = datasets.load_digits(return_X_y=True, n_class=n_classes)
 X = preprocessing.StandardScaler().fit_transform(X)
 xtr, xte, ytr, yte = model_selection.train_test_split(X, Y, test_size=test_size, random_state=seed)
 tr_f = os.path.abspath('x_train.svm')
 te_f = os.path.abspath('x_test.svm')
 
-#####################
-# create connectors #
-#####################
-# array connector
+# Create Connectors
 xtr_arr, xte_arr = ArrayConnector(xtr, ytr), ArrayConnector(xte, yte)
-
-# svm connector
 xtr_svm, xte_svm = SVMConnector(tr_f), SVMConnector(te_f)
-
-# array sparse connector
 xtr_sparse, xte_sparse = ArrayConnector(csc_matrix(xtr), ytr), ArrayConnector(csc_matrix(xte), yte)
 
 
@@ -52,7 +41,7 @@ class TestSVM(object):
     def test_classification(self):
 
         params = nn_params.copy()
-        params.update({'nclasses': n_classes})
+        params.update({'nclasses': n_classes, 'layers':[100]})
         optimizer = GenericSolver(**solver_param)
         datasets.dump_svmlight_file(xtr, ytr, tr_f)
         datasets.dump_svmlight_file(xte, yte, te_f)
@@ -60,23 +49,23 @@ class TestSVM(object):
         clfs = [
             # array connector without validation set
             [xtr_arr, [], MLP(**params)],
-            [xtr_arr, [], LR(**params)],
+            # [xtr_arr, [], LR(**params)],
 
             # sparse array connector without validation set
             [xtr_sparse, [], MLP(**params)],
-            [xtr_sparse, [], LR(**params)],
+            # [xtr_sparse, [], LR(**params)],
 
             # svm connector without validation set
             [xtr_svm, [], MLP(**params)],
-            [xtr_svm, [], LR(**params)],
+            # [xtr_svm, [], LR(**params)],
 
             # array connector with validation set
             [xtr_arr, [xte_arr], MLP(**params)],
-            [xtr_arr, [xte_arr], LR(**params)],
+            # [xtr_arr, [xte_arr], LR(**params)],
 
             # svm connector with validation set
             [xtr_svm, [xte_svm], MLP(**params)],
-            [xtr_svm, [xte_svm], LR(**params)],
+            # [xtr_svm, [xte_svm], LR(**params)],
         ]
 
         for tr_data, te_data, clf in clfs:

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#. -*- coding: utf-8 -*-
 """
 @author: Ardalan MEHRANI <ardalan77400@gmail.com>
 @brief:
@@ -32,8 +32,9 @@ import os
 import json
 import time
 import tempfile
+import numpy as np
 from pydd.utils import time_utils, os_utils
-from pydd.utils.dd_client import DD, DDCommunicationError
+from pydd.utils.dd_client import DD
 from pydd.utils.dd_utils import to_array
 
 
@@ -121,7 +122,9 @@ class AbstractModels(AbstractDDCalls):
         super(AbstractModels, self).__init__(self.host, self.port)
 
         if self.sname:
-            self.delete_service(self.sname, clear="mem")
+            for service in self.get_info()['head']['services']:
+                if service['name'] == self.sname.lower(): # DD lowercases services' name
+                    self.delete_service(self.sname, clear="mem")
         else:
             self.sname = "pyDD_{}".format(time_utils.fulltimestamp())
             self.description = self.sname
@@ -224,10 +227,10 @@ if __name__ == "__main__":
     service_parameters_input = {"connector": "svm"}
     service_parameters_output = {}
     service_parameters_mllib = {"nclasses": n_classes,
-                                "gpu": True, "gpuid": 0,
+                                "gpu": False,
                                 "template": "mlp", "layers": [100],
                                 "activation": "relu", "dropout": 0.5, "db": True}
-    clf = AbstractModels(host="localhost", port=8085, sname="sdfs-34-34-34", description="", mllib="caffe",
+    clf = AbstractModels(host="localhost", port=8085, description="", mllib="caffe",
                          service_parameters_input=service_parameters_input,
                          service_parameters_mllib=service_parameters_mllib,
                          service_parameters_output=service_parameters_output,
@@ -238,7 +241,7 @@ if __name__ == "__main__":
     train_parameters_output = {"measure": ["accp", "mcll"]},
     train_parameters_mllib = {
         "gpu": service_parameters_mllib["gpu"],
-        "solver": {"iterations": 100,
+        "solver": {"iterations": 1000,
                    "base_lr": 0.01,
                    "solver_type": "SGD"},
         "net": {"batch_size": 128},
