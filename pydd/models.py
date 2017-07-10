@@ -137,7 +137,7 @@ class MLP(AbstractModels):
         self.train_parameters_mllib = {"solver": solver.__dict__,
                                        "gpu": self.gpu,
                                        "net": {"batch_size": batch_size},
-                                       "class_weights": class_weights if class_weights else [1.] * self.service_parameters_mllib["nclasses"],
+                                       #"class_weights": class_weights if class_weights else [1.] * self.service_parameters_mllib["nclasses"],
                                        "resume": self.service_parameters_mllib["resume"]
                                        }
         if self.gpu:
@@ -302,7 +302,7 @@ class LR(AbstractModels):
 
         self.train_parameters_mllib = {"solver": solver.__dict__,
                                        "net": {"batch_size": batch_size},
-                                       "class_weights": class_weights if class_weights else [1.] * self.service_parameters_mllib["nclasses"]
+                                       #"class_weights": class_weights if class_weights else [1.] * self.service_parameters_mllib["nclasses"]
                                        }
         if self.gpu:
             self.train_parameters_mllib.update({"gpu": self.gpu, "gpuid": self.gpuid})
