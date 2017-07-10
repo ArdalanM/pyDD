@@ -106,7 +106,7 @@ class MLP(AbstractModels):
                                         "weights": self.weights,
                                         "db": self.db}
 
-        self.service_parameters_input = get_connector_parameters(connector)
+        self.service_parameters_input = self.get_connector_parameters(connector)
 
         if not self.resume:
             self.model.update({"templates": self.templates})
@@ -188,7 +188,7 @@ class MLP(AbstractModels):
     def predict_proba(self, connector, batch_size=128):
 
         nclasses = self.service_parameters_mllib["nclasses"]
-        self.predict_parameters_input = get_connector_parameters(connector)
+        self.predict_parameters_input = self.get_connector_parameters(connector)
 
         self.predict_parameters_mllib = {
             "gpu": self.service_parameters_mllib["gpu"],
