@@ -129,7 +129,7 @@ class MLP(AbstractModels):
         self.train_parameters_input = {"db": True}
         self.train_parameters_input.update(train_data.train_parameters_input)
         # Remove black and white parameteer if the mllib used is tensorflow
-        if self.mllib == "tensorflow" and data.name == "image:
+        if self.mllib == "tensorflow" and data.name == "image":
             del self.train_parameters_input['bw']
 
         self.train_parameters_output = {"measure": metrics}
