@@ -223,8 +223,8 @@ class MLP(AbstractModels):
 
         return y_score
 
-    def predict(self, connector, batch_size=128):
-        y_score = self.predict_proba(connector, batch_size)
+    def predict(self, connector, batch_size=128, dict_uri=None):
+        y_score = self.predict_proba(connector, batch_size, dict_uri)
         return (np.argmax(y_score, 1)).reshape(len(y_score), 1)
 
 
@@ -348,7 +348,7 @@ class LR(AbstractModels):
 
         return self.train_logs
 
-    def predict_proba(self, connector, batch_size=128):
+    def predict_proba(self, connector, batch_size=128, dict_uri=None):
 
         nclasses = self.service_parameters_mllib["nclasses"]
         self.predict_parameters_input = connector.predict_parameters_input
@@ -376,7 +376,7 @@ class LR(AbstractModels):
         y_score = self._predict_proba(data,
                                       connector.predict_parameters_input,
                                       self.predict_parameters_mllib,
-                                      self.predict_parameters_output)
+                                      self.predict_parameters_output, dict_uri)
 
         return y_score
 

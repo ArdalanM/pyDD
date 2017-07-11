@@ -8,7 +8,7 @@ import numpy as np
 from scipy import sparse
 
 
-def to_array(json_dump, nclasses):
+def to_array(json_dump, nclasses, dict_uri=None):
     # print(json_dump)
     nb_rows = len(json_dump['body']['predictions'])
     nb_col = nclasses
@@ -16,7 +16,10 @@ def to_array(json_dump, nclasses):
     y_score = np.zeros((nb_rows, nb_col), dtype=np.float32)
 
     for i, row in enumerate(json_dump['body']['predictions']):
-        row_number = int(row['uri'])
+        if dict_uri:
+            row_number = dict_uri[row['uri']]
+        else:
+            row_number = int(row['uri'])
         # assert row_number == i # This assertion will raise error for LMDB predictions
 
         # print(row['classes'])

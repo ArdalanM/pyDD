@@ -186,7 +186,7 @@ class AbstractModels(AbstractDDCalls):
 
         return train_logs
 
-    def _predict_proba(self, data, parameters_input=None, parameters_mllib=None, parameters_output=None):
+    def _predict_proba(self, data, parameters_input=None, parameters_mllib=None, parameters_output=None,dict_uri=None):
 
         json_dump = self.post_predict(self.sname, data,
                                       parameters_input,
@@ -196,7 +196,7 @@ class AbstractModels(AbstractDDCalls):
         with open("{}/model.json".format(self.model["repository"])) as f:
             self.calls = [json.loads(line, encoding="utf-8") for line in f]
 
-        y_score = to_array(json_dump, self.service_parameters_mllib["nclasses"])
+        y_score = to_array(json_dump, self.service_parameters_mllib["nclasses"], dict_uri)
 
         return y_score
 
