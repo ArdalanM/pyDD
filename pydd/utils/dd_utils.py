@@ -14,9 +14,9 @@ def to_array(json_dump, nclasses, dict_uri=None):
     nb_col = nclasses
 
     y_score = np.zeros((nb_rows, nb_col), dtype=np.float32)
-
+    use_dict = len(dict_uri.keys()) > 0
     for i, row in enumerate(json_dump['body']['predictions']):
-        if dict_uri:
+        if use_dict:
             row_number = dict_uri[row['uri']]
         else:
             row_number = int(row['uri'])

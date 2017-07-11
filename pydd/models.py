@@ -220,7 +220,7 @@ class MLP(AbstractModels):
                                       self.predict_parameters_input,
                                       self.predict_parameters_mllib,
                                       self.predict_parameters_output,
-                                      dict_uri=None)
+                                      dict_uri=dict_uri)
 
         return y_score
 
