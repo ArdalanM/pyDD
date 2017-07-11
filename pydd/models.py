@@ -217,7 +217,7 @@ class MLP(AbstractModels):
                 data = sparse_to_sparse_strings(connector.X)
 
         y_score = self._predict_proba(data,
-                                      connector.predict_parameters_input,
+                                      self.predict_parameters_input,
                                       self.predict_parameters_mllib,
                                       self.predict_parameters_output)
 
