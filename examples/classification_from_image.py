@@ -47,20 +47,22 @@ for label in list_labels:
         os.mkdir(os.path.join(train_dir, str(label)))
     except:
         pass
-dict_uri = {}
+
 for i in range(xtr.shape[0]):
     filename = os.path.join(train_dir, str(ytr[i]), str(i) + '.jpeg')
     imsave(filename, xtr[i].reshape((28, 28)))
-    dict_uri[filename] = i
 
 # Test
 test_dir = os.path.abspath('test_images')
+dict_uri = {}
 try:
     os.mkdir(test_dir)   
 except:
     pass
 for i in range(xte.shape[0]):
-    imsave(os.path.join(test_dir, str(i) + '.jpeg'), xte[i].reshape((28, 28)))
+    filename = os.path.join(test_dir, str(i) + '.jpeg')
+    imsave(filename, xte[i].reshape((28, 28)))
+    dict_uri[filename] = i
 
 # Create repistory for model
 model_dir = os.path.abspath('lenet')
@@ -96,4 +98,4 @@ report = metrics.classification_report(yte, yte_pred)
 print(report)
 
 # Remove dumped files
-os_utils._remove_dirs([test_dir, train_dir, model_dir])
+os_utils._remove_dirs([test_dir, train_dir, model_dir, data_home])
