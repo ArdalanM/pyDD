@@ -196,7 +196,7 @@ class AbstractModels(AbstractDDCalls):
         with open("{}/model.json".format(self.model["repository"])) as f:
             self.calls = [json.loads(line, encoding="utf-8") for line in f]
 
-        y_score = to_array(json_dump, self.service_parameters_mllib["nclasses"], dict_uri)
+        y_score = to_array(json_dump, self.service_parameters_mllib["nclasses"], dict_uri=dict_uri)
 
         return y_score
 
