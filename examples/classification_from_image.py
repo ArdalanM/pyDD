@@ -91,7 +91,7 @@ logs = clf.fit(data,  solver=solver, batch_size=32, metrics=['acc', 'mcll', 'f1'
 
 # Prediction
 test_data = ImageConnector(path=test_dir, bw=True, shuffle=True, width=28, height=28)
-yte_pred = clf.predict(test_data, batch_size=32, dict_uri)
+yte_pred = clf.predict(test_data, batch_size=32, dict_uri=dict_uri)
 report = metrics.classification_report(yte, yte_pred)   
 print(report)
 

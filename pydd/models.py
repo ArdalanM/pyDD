@@ -380,8 +380,8 @@ class LR(AbstractModels):
 
         return y_score
 
-    def predict(self, connector, batch_size=128):
-        y_score = self.predict_proba(connector, batch_size)
+    def predict(self, connector, batch_size=128, dict_uri=None):
+        y_score = self.predict_proba(connector, batch_size, dict_uri)
         return (np.argmax(y_score, 1)).reshape(len(y_score), 1)
 
 
