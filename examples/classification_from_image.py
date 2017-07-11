@@ -28,7 +28,7 @@ while True:
     except:
         continue
     break
-X, y = mnist.data, mnist.target
+X, y = mnist.data, mnist.target.astype(np.int)
 
 # Split data in train and test
 split_params = {"test_size": 0.2, "random_state": seed}
@@ -47,8 +47,11 @@ for label in list_labels:
         os.mkdir(os.path.join(train_dir, str(label)))
     except:
         pass
+dict_uri = {}
 for i in range(xtr.shape[0]):
-    imsave(os.path.join(train_dir, str(ytr[i]), str(i) + '.jpeg'), xtr[i].reshape((28, 28)))
+    filename = os.path.join(train_dir, str(ytr[i]), str(i) + '.jpeg')
+    imsave(filename, xtr[i].reshape((28, 28)))
+    dict_uri[filename] = i
 
 # Test
 test_dir = os.path.abspath('test_images')
@@ -88,8 +91,8 @@ logs = clf.fit(data,  solver=solver, batch_size=32, metrics=['acc', 'mcll', 'f1'
 
 # Prediction
 test_data = ImageConnector(path=test_dir, bw=True, shuffle=True, width=28, height=28)
-yte_pred = clf.predict(test_data, batch_size=32)
-report = metrics.classification_report(yte, yte_pred)
+yte_pred = clf.predict(test_data, batch_size=32, dict_uri)
+report = metrics.classification_report(yte, yte_pred)   
 print(report)
 
 # Remove dumped files
