@@ -22,9 +22,8 @@ class MLP(AbstractModels):
 
     def get_connector_parameters(self, connector):
         # If the connector is not an image
-        if isinstance(self.connector, str):
+        if isinstance(connector, str):
             parameters_input = {"connector": self.connector}
-        # If the connector is an image
         else:
             # Differiate paraameters if Caffe or Tensorflow is used
             bw = connector.service_parameters_input["bw"]
@@ -188,7 +187,6 @@ class MLP(AbstractModels):
     def predict_proba(self, connector, batch_size=128, dict_uri=None):
 
         nclasses = self.service_parameters_mllib["nclasses"]
-        self.predict_parameters_input = self.get_connector_parameters(connector)
 
         self.predict_parameters_mllib = {
             "gpu": self.service_parameters_mllib["gpu"],
@@ -205,6 +203,7 @@ class MLP(AbstractModels):
             data = [connector.path]
 
         if connector.name == "image":
+            self.predict_parameters_input = self.get_connector_parameters(connector)            
             if os.path.isdir(connector.path):
                 data = glob.glob(os.path.join(connector.path, '*'))
             else:
@@ -215,7 +214,7 @@ class MLP(AbstractModels):
                 data = ndarray_to_sparse_strings(connector.X)
             elif sparse.issparse(connector.X):
                 data = sparse_to_sparse_strings(connector.X)
-
+                
         y_score = self._predict_proba(data,
                                       self.predict_parameters_input,
                                       self.predict_parameters_mllib,
@@ -375,7 +374,7 @@ class LR(AbstractModels):
                 data = sparse_to_sparse_strings(connector.X)
 
         y_score = self._predict_proba(data,
-                                      connector.predict_parameters_input,
+                                      self.predict_parameters_input,
                                       self.predict_parameters_mllib,
                                       self.predict_parameters_output, dict_uri=dict_uri)
 
