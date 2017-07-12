@@ -8,16 +8,36 @@ import numpy as np
 from scipy import sparse
 
 
-def to_array(json_dump, nclasses):
+def to_array(json_dump, nclasses, dict_uri=None):
     # print(json_dump)
     nb_rows = len(json_dump['body']['predictions'])
     nb_col = nclasses
 
     y_score = np.zeros((nb_rows, nb_col), dtype=np.float32)
-
+    img_fold = False
+    # If inputs are images in a folder
+    if dict_uri:
+        img_fold = len(dict_uri.keys()) > 0
+    lmdb = False
+    # Check if input is an lmdb
+    try:
+        first_index = int(json_dump['body']['predictions'][0]['uri'].split('_')[0])
+        if first_index == 0:
+            lmdb = True
+    except:
+        print('INFO: No prefix index, it seems not to be an LMDB')
+        pass
+        
     for i, row in enumerate(json_dump['body']['predictions']):
-        row_number = int(row['uri'])
-        # assert row_number == i # This assertion will raise error for LMDB predictions
+        # If input is an lmdb
+        if lmdb:
+            row_number = int(row['uri'].split('_')[0])
+        # If input is an images' folder
+        elif img_fold:
+            row_number = dict_uri[row['uri']]
+        else:
+            row_number = int(row['uri'])
+            assert row_number == i # This assertion will raise error for LMDB predictions
 
         # print(row['classes'])
         for classe in row['classes']:

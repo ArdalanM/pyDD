@@ -41,7 +41,7 @@ class TestSVM(object):
     def test_classification(self):
 
         params = nn_params.copy()
-        params.update({'nclasses': n_classes, 'layers':[50]})
+        params.update({'nclasses': n_classes, 'layers':[100]})
         optimizer = GenericSolver(**solver_param)
         datasets.dump_svmlight_file(xtr, ytr, tr_f)
         datasets.dump_svmlight_file(xte, yte, te_f)

@@ -7,6 +7,7 @@
 import os
 import shutil
 import numpy as np
+import glob
 from scipy import sparse
 from sklearn.datasets import dump_svmlight_file
 from pydd.utils import time_utils
@@ -18,6 +19,32 @@ class MLP(AbstractModels):
     """
 
     """
+
+    def get_connector_parameters(self, connector):
+        # If the connector is not an image
+        if isinstance(connector, str):
+            parameters_input = {"connector": self.connector}
+        else:
+            # Differiate paraameters if Caffe or Tensorflow is used
+            bw = connector.service_parameters_input["bw"]
+            mean = connector.service_parameters_input["mean"]
+            std = connector.service_parameters_input["std"]
+            parameters_input = {"connector": connector.name,
+                "width": connector.service_parameters_input["width"],
+                "height": connector.service_parameters_input["height"]
+            }
+
+            if self.mllib == 'caffe':
+                parameters_input.update({"bw": bw})
+                if isinstance(mean, list):
+                    parameters_input.update({"mean": mean})
+                        
+            elif self.mllib == "tensorflow":
+                parameters_input.update({"std": std})
+                if isinstance(mean, float):
+                    parameters_input.update({"mean": mean})
+        
+        return parameters_input
 
     def __init__(self, host="localhost",
                  port=8080,
@@ -69,7 +96,6 @@ class MLP(AbstractModels):
         if self.weights:
             self.model.update({"weights": self.weights})
 
-        self.service_parameters_input = {"connector": self.connector}
         self.service_parameters_output = {}
         self.service_parameters_mllib = {"nclasses": self.nclasses, "ntargets": self.ntargets,
                                         "resume": self.resume, "layers": self.layers,
@@ -78,6 +104,8 @@ class MLP(AbstractModels):
                                         "finetuning": self.finetuning,
                                         "weights": self.weights,
                                         "db": self.db}
+
+        self.service_parameters_input = self.get_connector_parameters(connector)
 
         if not self.resume:
             self.model.update({"templates": self.templates})
@@ -99,6 +127,9 @@ class MLP(AbstractModels):
         # df: True otherwise core dump when training on svm data
         self.train_parameters_input = {"db": True}
         self.train_parameters_input.update(train_data.train_parameters_input)
+        # Remove black and white parameteer if the mllib used is tensorflow
+        if self.mllib == "tensorflow" and train_data.name == "image":
+            del self.train_parameters_input['bw']
 
         self.train_parameters_output = {"measure": metrics}
 
@@ -112,7 +143,7 @@ class MLP(AbstractModels):
             self.train_parameters_mllib.update({"gpuid": self.gpuid})
 
         self.data = []
-        if train_data.name == "svm":
+        if train_data.name in ['svm', 'image']:
             self.data.append(train_data.path)
 
             if train_data.lmdb_path:
@@ -153,10 +184,10 @@ class MLP(AbstractModels):
 
         return self.train_logs
 
-    def predict_proba(self, connector, batch_size=128):
+    def predict_proba(self, connector, batch_size=128, dict_uri=None):
 
         nclasses = self.service_parameters_mllib["nclasses"]
-        self.predict_parameters_input = connector.predict_parameters_input
+        self.predict_parameters_input = {}
 
         self.predict_parameters_mllib = {
             "gpu": self.service_parameters_mllib["gpu"],
@@ -172,21 +203,29 @@ class MLP(AbstractModels):
         if connector.name == "lmdb":
             data = [connector.path]
 
+        if connector.name == "image":
+            self.predict_parameters_input = self.get_connector_parameters(connector)
+            if os.path.isdir(connector.path):
+                data = glob.glob(os.path.join(connector.path, '*'))
+            else:
+                data = [connector.path]
+
         elif connector.name == "array":
             if type(connector.X) == np.ndarray:
                 data = ndarray_to_sparse_strings(connector.X)
             elif sparse.issparse(connector.X):
                 data = sparse_to_sparse_strings(connector.X)
-
+                
         y_score = self._predict_proba(data,
-                                      connector.predict_parameters_input,
+                                      self.predict_parameters_input,
                                       self.predict_parameters_mllib,
-                                      self.predict_parameters_output)
+                                      self.predict_parameters_output,
+                                      dict_uri=dict_uri)
 
         return y_score
 
-    def predict(self, connector, batch_size=128):
-        y_score = self.predict_proba(connector, batch_size)
+    def predict(self, connector, batch_size=128, dict_uri=None):
+        y_score = self.predict_proba(connector, batch_size, dict_uri=dict_uri)
         return (np.argmax(y_score, 1)).reshape(len(y_score), 1)
 
 
@@ -233,7 +272,6 @@ class LR(AbstractModels):
         self.db = db
         self.tmp_dir = tmp_dir
 
-        self.service_parameters_input = {"connector": self.connector}
         self.service_parameters_output = {}
         self.model = {"repository": self.repository}
         self.service_parameters_mllib = {"nclasses": self.nclasses, "ntargets": self.ntargets, "gpu": self.gpu,
@@ -243,6 +281,7 @@ class LR(AbstractModels):
             self.model.update({"templates": self.templates})
             self.service_parameters_mllib.update({"template": self.template})
 
+        self.service_parameters_input = self.get_connector_parameters(connector)        
         if self.gpu:
             self.service_parameters_mllib.update({"gpuid": self.gpuid})
 
@@ -310,7 +349,7 @@ class LR(AbstractModels):
 
         return self.train_logs
 
-    def predict_proba(self, connector, batch_size=128):
+    def predict_proba(self, connector, batch_size=128, dict_uri=None):
 
         nclasses = self.service_parameters_mllib["nclasses"]
         self.predict_parameters_input = connector.predict_parameters_input
@@ -336,14 +375,14 @@ class LR(AbstractModels):
                 data = sparse_to_sparse_strings(connector.X)
 
         y_score = self._predict_proba(data,
-                                      connector.predict_parameters_input,
+                                      self.predict_parameters_input,
                                       self.predict_parameters_mllib,
-                                      self.predict_parameters_output)
+                                      self.predict_parameters_output, dict_uri=dict_uri)
 
         return y_score
 
-    def predict(self, connector, batch_size=128):
-        y_score = self.predict_proba(connector, batch_size)
+    def predict(self, connector, batch_size=128, dict_uri=None):
+        y_score = self.predict_proba(connector, batch_size, dict_uri=dict_uri)
         return (np.argmax(y_score, 1)).reshape(len(y_score), 1)
 
 
