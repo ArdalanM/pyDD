@@ -18,8 +18,13 @@ def to_array(json_dump, nclasses, dict_uri=None):
         use_dict = len(dict_uri.keys()) > 0
         prefix = False
         # Verify if input is an LMDB
-        if int(json_dump['body']['predictions'][0]['uri'].split('_')[0]) == 0:
-            prefix = True
+        try:
+            first_index = int(json_dump['body']['predictions'][0]['uri'].split('_')[0])
+            if first_index == 0:
+                prefix = True
+        except:
+            print('INFO: No prefix index, it seems not to be an LMDB')
+            pass
     else:
         use_dict = False
     for i, row in enumerate(json_dump['body']['predictions']):
