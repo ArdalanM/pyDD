@@ -128,7 +128,7 @@ class MLP(AbstractModels):
         self.train_parameters_input = {"db": True}
         self.train_parameters_input.update(train_data.train_parameters_input)
         # Remove black and white parameteer if the mllib used is tensorflow
-        if self.mllib == "tensorflow" and data.name == "image":
+        if self.mllib == "tensorflow" and train_data.name == "image":
             del self.train_parameters_input['bw']
 
         self.train_parameters_output = {"measure": metrics}
@@ -187,6 +187,7 @@ class MLP(AbstractModels):
     def predict_proba(self, connector, batch_size=128, dict_uri=None):
 
         nclasses = self.service_parameters_mllib["nclasses"]
+        self.predict_parameters_input = {}
 
         self.predict_parameters_mllib = {
             "gpu": self.service_parameters_mllib["gpu"],
@@ -203,7 +204,7 @@ class MLP(AbstractModels):
             data = [connector.path]
 
         if connector.name == "image":
-            self.predict_parameters_input = self.get_connector_parameters(connector)            
+            self.predict_parameters_input = self.get_connector_parameters(connector)
             if os.path.isdir(connector.path):
                 data = glob.glob(os.path.join(connector.path, '*'))
             else:
