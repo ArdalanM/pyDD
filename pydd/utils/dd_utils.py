@@ -14,30 +14,28 @@ def to_array(json_dump, nclasses, dict_uri=None):
     nb_col = nclasses
 
     y_score = np.zeros((nb_rows, nb_col), dtype=np.float32)
+    use_dict = False
+    # If inputs are images in a folder
     if dict_uri:
         use_dict = len(dict_uri.keys()) > 0
-        prefix = False
-        # Verify if input is an LMDB
-        try:
-            first_index = int(json_dump['body']['predictions'][0]['uri'].split('_')[0])
-            if first_index == 0:
-                prefix = True
-        except:
-            print('INFO: No prefix index, it seems not to be an LMDB')
-            pass
-    else:
-        use_dict = False
+    lmdb = False
+    # Verify if input is an LMDB
+    try:
+        first_index = int(json_dump['body']['predictions'][0]['uri'].split('_')[0])
+        if first_index == 0:
+            lmdb = True
+    except:
+        print('INFO: No prefix index, it seems not to be an LMDB')
+        pass
+        
     for i, row in enumerate(json_dump['body']['predictions']):
-        if use_dict:
-            if prefix:
-                # if input is an LMDB, remove prefix
-                #row_number = dict_uri['_'.join(row['uri'].split('_')[1:])]
-                row_number = int(row['uri'].split('_')[0])                
-            else:
-                row_number = dict_uri[row['uri']]                
+        if lmdb:
+            row_number = int(row['uri'].split('_')[0])
+        elif use_dict:
+            row_number = dict_uri[row['uri']]
         else:
             row_number = int(row['uri'])
-        # assert row_number == i # This assertion will raise error for LMDB predictions
+            assert row_number == i # This assertion will raise error for LMDB predictions
 
         # print(row['classes'])
         for classe in row['classes']:
