@@ -14,12 +14,12 @@ def to_array(json_dump, nclasses, dict_uri=None):
     nb_col = nclasses
 
     y_score = np.zeros((nb_rows, nb_col), dtype=np.float32)
-    use_dict = False
+    img_fold = False
     # If inputs are images in a folder
     if dict_uri:
-        use_dict = len(dict_uri.keys()) > 0
+        img_fold = len(dict_uri.keys()) > 0
     lmdb = False
-    # Verify if input is an LMDB
+    # Check if input is an lmdb
     try:
         first_index = int(json_dump['body']['predictions'][0]['uri'].split('_')[0])
         if first_index == 0:
@@ -29,9 +29,11 @@ def to_array(json_dump, nclasses, dict_uri=None):
         pass
         
     for i, row in enumerate(json_dump['body']['predictions']):
+        # If input is an lmdb
         if lmdb:
             row_number = int(row['uri'].split('_')[0])
-        elif use_dict:
+        # If input is an images' folder
+        elif img_fold:
             row_number = dict_uri[row['uri']]
         else:
             row_number = int(row['uri'])
