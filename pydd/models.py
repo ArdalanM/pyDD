@@ -96,10 +96,6 @@ class MLP(AbstractModels):
         if self.weights:
             self.model.update({"weights": self.weights})
 
-<<<<<<< HEAD
-=======
-        self.service_parameters_input = {"connector": self.connector}
->>>>>>> arda-pydd/master
         self.service_parameters_output = {}
         self.service_parameters_mllib = {"nclasses": self.nclasses, "ntargets": self.ntargets,
                                         "resume": self.resume, "layers": self.layers,
@@ -109,11 +105,8 @@ class MLP(AbstractModels):
                                         "weights": self.weights,
                                         "db": self.db}
 
-<<<<<<< HEAD
         self.service_parameters_input = self.get_connector_parameters(connector)
 
-=======
->>>>>>> arda-pydd/master
         if not self.resume:
             self.model.update({"templates": self.templates})
             self.service_parameters_mllib.update({"template": self.template})
@@ -143,22 +136,14 @@ class MLP(AbstractModels):
         self.train_parameters_mllib = {"solver": solver.__dict__,
                                        "gpu": self.gpu,
                                        "net": {"batch_size": batch_size},
-<<<<<<< HEAD
-                                       #"class_weights": class_weights if class_weights else [1.] * self.service_parameters_mllib["nclasses"],
-=======
                                        "class_weights": class_weights if class_weights else [1.] * self.service_parameters_mllib["nclasses"],
->>>>>>> arda-pydd/master
                                        "resume": self.service_parameters_mllib["resume"]
                                        }
         if self.gpu:
             self.train_parameters_mllib.update({"gpuid": self.gpuid})
 
         self.data = []
-<<<<<<< HEAD
         if train_data.name in ['svm', 'image']:
-=======
-        if train_data.name == "svm":
->>>>>>> arda-pydd/master
             self.data.append(train_data.path)
 
             if train_data.lmdb_path:
@@ -287,10 +272,6 @@ class LR(AbstractModels):
         self.db = db
         self.tmp_dir = tmp_dir
 
-<<<<<<< HEAD
-=======
-        self.service_parameters_input = {"connector": self.connector}
->>>>>>> arda-pydd/master
         self.service_parameters_output = {}
         self.model = {"repository": self.repository}
         self.service_parameters_mllib = {"nclasses": self.nclasses, "ntargets": self.ntargets, "gpu": self.gpu,
@@ -300,10 +281,7 @@ class LR(AbstractModels):
             self.model.update({"templates": self.templates})
             self.service_parameters_mllib.update({"template": self.template})
 
-<<<<<<< HEAD
-        self.service_parameters_input = {"connector": self.connector if isinstance(self.connector, str) else connector.name}
-=======
->>>>>>> arda-pydd/master
+        self.service_parameters_input = self.get_connector_parameters(connector)        
         if self.gpu:
             self.service_parameters_mllib.update({"gpuid": self.gpuid})
 
@@ -325,11 +303,7 @@ class LR(AbstractModels):
 
         self.train_parameters_mllib = {"solver": solver.__dict__,
                                        "net": {"batch_size": batch_size},
-<<<<<<< HEAD
-                                       #"class_weights": class_weights if class_weights else [1.] * self.service_parameters_mllib["nclasses"]
-=======
                                        "class_weights": class_weights if class_weights else [1.] * self.service_parameters_mllib["nclasses"]
->>>>>>> arda-pydd/master
                                        }
         if self.gpu:
             self.train_parameters_mllib.update({"gpu": self.gpu, "gpuid": self.gpuid})
