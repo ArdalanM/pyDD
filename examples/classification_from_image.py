@@ -69,7 +69,7 @@ for i in range(xte.shape[0]):
 # Create repistory for model
 model_dir = os.path.abspath('lenet')
 try:
-    os.mkdir(model_dir)   
+    os.mkdir(model_dir)
 except:
     pass
 links = [
