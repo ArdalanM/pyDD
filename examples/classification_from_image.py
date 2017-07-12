@@ -7,13 +7,13 @@ import os
 import numpy as np
 from pydd.solver import GenericSolver
 from pydd.models import MLP
-from pydd.connectors import ImageConnector
+from pydd.connectors import ImageConnector, LMDBConnector
 from pydd.utils import os_utils
 from sklearn import metrics, model_selection
 from sklearn.datasets import fetch_mldata
 from scipy.misc import imsave
 from urllib.request import urlretrieve
-
+import lmdb
 
 #Parameters
 seed = 1337
@@ -37,6 +37,7 @@ xtr, xte, ytr, yte = model_selection.train_test_split(X, y, **split_params)
 ## Create dataset images
 # Train
 train_dir = os.path.abspath('train_images')
+dict_uri_train = {}
 try:
     os.mkdir(train_dir)   
 except:
@@ -51,6 +52,7 @@ for label in list_labels:
 for i in range(xtr.shape[0]):
     filename = os.path.join(train_dir, str(ytr[i]), str(i) + '.jpeg')
     imsave(filename, xtr[i].reshape((28, 28)))
+    dict_uri_train[filename] = i
 
 # Test
 test_dir = os.path.abspath('test_images')
@@ -91,10 +93,33 @@ clf = MLP(**params)
 
 logs = clf.fit(data,  solver=solver, batch_size=32, metrics=['acc', 'mcll', 'f1'])
 
-# Prediction
-test_data = ImageConnector(path=test_dir, bw=True, shuffle=True, width=28, height=28)
+# Prediction from image folder
+test_data = ImageConnector(path=test_dir, bw=True, shuffle=False, width=28, height=28)
 yte_pred = clf.predict(test_data, batch_size=32, dict_uri=dict_uri)
 report = metrics.classification_report(yte, yte_pred)   
+print(report)
+
+# Prediction from lmdb is possible
+# Find a way to get
+lmdb_dir = os.path.join(model_dir, 'test.lmdb')
+test_data = LMDBConnector(path=lmdb_dir)
+yval_pred = clf.predict(test_data, batch_size=32)
+
+# Open lmdb file
+lmdb_env = lmdb.open(lmdb_dir, lock=False, readonly=True)
+nb_examples = lmdb_env.stat()['entries']
+yval = np.zeros((nb_examples, ), dtype=np.int)
+
+# Read lmdb
+with lmdb_env.begin() as txn:
+    txn_curs = txn.cursor()
+    for key, value in txn_curs:
+        # Get true label and order of insertion
+        row_number = int(key.decode("utf-8").split('_')[0])
+        true_label = int(key.decode("utf-8").split('/')[-2])
+        yval[row_number] = true_label
+
+report = metrics.classification_report(yval, yval_pred)
 print(report)
 
 # Remove dumped files
