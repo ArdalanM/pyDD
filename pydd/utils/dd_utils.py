@@ -14,10 +14,21 @@ def to_array(json_dump, nclasses, dict_uri=None):
     nb_col = nclasses
 
     y_score = np.zeros((nb_rows, nb_col), dtype=np.float32)
-    use_dict = len(dict_uri.keys()) > 0
+    if dict_uri:
+        use_dict = len(dict_uri.keys()) > 0
+        prefix = False
+        # Verify if input is an LMDB
+        if int(json_dump['body']['predictions'][0]['uri'].split('_')[0]) == 0:
+            prefix = True
+    else:
+        use_dict = False
     for i, row in enumerate(json_dump['body']['predictions']):
         if use_dict:
-            row_number = dict_uri[row['uri']]
+            if prefix:
+                # if input is an LMDB, remove prefix
+                row_number = '_'.join(dict_uri[row['uri']].split('_')[1:])
+            else:
+                row_number = dict_uri[row['uri']]                
         else:
             row_number = int(row['uri'])
         # assert row_number == i # This assertion will raise error for LMDB predictions
