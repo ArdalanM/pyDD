@@ -449,7 +449,7 @@ class XGB(AbstractModels):
 
         self.model = {"repository": self.repository}
         self.service_parameters_mllib = {"nclasses": self.nclasses, "ntargets": self.ntargets}
-        self.service_parameters_input = {"connector": self.connector if isinstance(self.connector, str) else connector.name}
+        self.service_parameters_input = {"connector": self.connector}
         self.service_parameters_output = {}
 
         super(XGB, self).__init__(host=self.host, port=self.port, sname=self.sname,
