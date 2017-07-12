@@ -31,7 +31,7 @@ def to_array(json_dump, nclasses, dict_uri=None):
         if use_dict:
             if prefix:
                 # if input is an LMDB, remove prefix
-                row_number = '_'.join(dict_uri[row['uri']].split('_')[1:])
+                row_number = dict_uri['_'.join(row['uri'].split('_')[1:])]
             else:
                 row_number = dict_uri[row['uri']]                
         else:
