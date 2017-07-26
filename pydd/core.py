@@ -177,11 +177,11 @@ class AbstractModels(AbstractDDCalls):
                 train_status = self.get_train(self.sname, job=1, timeout=display_metric_interval)
                 if train_status["head"]["status"] == "running":
                     logs = train_status["body"]["measure"]
-                    print(logs)
+                    print(logs, flush=True)
                     if logs:
                         train_logs.append(logs)
                 else:
-                    print(train_status)
+                    print(train_status, flush=True)
                     break
 
         return train_logs
