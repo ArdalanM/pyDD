@@ -53,15 +53,15 @@ def batch_read(thefile):
 
 def main():
     opt = get_args()
-
-    vis = Visdom()
+   
+    vis = Visdom(env=opt.log_dir)
 
     # Create empty plot for each metrics
     dic_plots = {}
     for metric in METRICS:
-        dic_plots[metric] =  vis.line(np.array([0]), np.array([0]),
-                                      opts=dict(legend=False, xlabel='Iteration', title=metric,
-                                                marginleft=30, marginright=30, marginbottom=30, margintop=30))
+        dic_plots[metric] = vis.line(np.array([0]), np.array([0]),
+                        opts=dict(legend=False, xlabel='Iteration', title=metric,
+                                marginleft=30, marginright=30, marginbottom=30, margintop=30), win=metric, env=opt.log_dir)
 
     # where the monitoring begins
     curr_iter, prev_iter = 0, 0
@@ -92,7 +92,7 @@ def main():
             y = np.array(dic_metrics[metric])
 
             if len(y) > 0:
-                vis.line(y, x, win=dic_plots[metric], update='append')
+                vis.line(y, x, win=dic_plots[metric], update='append', env=opt.log_dir)
         # END OF Batch read
 
         # stream read
@@ -110,10 +110,11 @@ def main():
                         if metric in line:
                             x = np.array([curr_iter])
                             y = np.array([line[metric]])
-                            vis.line(y, x, win=dic_plots[metric], update='append')
+                            vis.line(y, x, win=dic_plots[metric], update='append', env=opt.log_dir)
             except:
                 pass
         # END OF stream read
+
 
 if __name__ == "__main__":
     main()
