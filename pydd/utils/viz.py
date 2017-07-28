@@ -40,12 +40,19 @@ def get_args():
 
 def stream_read(thefile):
     """Iterator reading a file (line by line) and wait for new lines"""
+    count = 0
     while True:
         line = thefile.readline()
         if not line:
-            time.sleep(0.1) # Sleep briefly
+            time.sleep(0.1)  # Sleep briefly
+            # If we wait more than 10 seconds say that the training is over
+            count += 1
+            if count >= 100:
+                break
             continue
         yield line
+    
+    yield None
 
 
 def batch_read(thefile):
@@ -59,6 +66,11 @@ def main():
     if len(logs) == 0:
         logs = [opt.log_dir]
 
+    # Parameters
+    prev_iter = {}
+    curr_iter = {}
+    dic_plot = {}
+    f = {}
     for log in logs:
         vis = Visdom(env=log)
 
@@ -69,57 +81,75 @@ def main():
                             opts=dict(legend=False, xlabel='Iteration', title=metric,
                                     marginleft=30, marginright=30, marginbottom=30, margintop=30), win=metric, env=log)
 
+        dic_plot[log] = dic_plots
         # where the monitoring begins
-        curr_iter, prev_iter = 0, 0
-        with open(log) as f:
+        curr_iter[log], prev_iter[log] = 0, 0
+        f[log] = open(log)
 
-            # Batch read
-            dic_metrics = {k:[] for k in METRICS}
-            iterations = []
-            lines = batch_read(f)
-            for line in lines:
-                try:
-                    line = json.loads(line.replace('\'', '\"'))
-                    curr_iter = line['iteration']
+        # Batch read
+        dic_metrics = {k: [] for k in METRICS}
+        iterations = []
+        lines = batch_read(f[log])
+        for line in lines:
+            try:
+                line = json.loads(line.replace('\'', '\"'))
+                curr_iter[log] = line['iteration']
 
-                    # print(line)
-                    if curr_iter > prev_iter:
-                        iterations.append(curr_iter)
-                        prev_iter = curr_iter
+                # print(line)
+                if curr_iter[log] > prev_iter[log]:
+                    iterations.append(curr_iter[log])
+                    prev_iter[log] = curr_iter[log]
 
-                        for metric in METRICS:
-                            if metric in line:
-                                dic_metrics[metric].append(line[metric])
-                except:
-                    pass
+                    for metric in METRICS:
+                        if metric in line:
+                            dic_metrics[metric].append(line[metric])
+            except:
+                pass
 
-            for metric in METRICS:
-                x = np.array(iterations)
-                y = np.array(dic_metrics[metric])
+        for metric in METRICS:
+            x = np.array(iterations)
+            y = np.array(dic_metrics[metric])
 
-                if len(y) > 0:
-                    vis.line(y, x, win=dic_plots[metric], update='append', env=log)
+            if len(y) > 0:
+                vis.line(y, x, win=dic_plot[log] [metric], update='append', env=log)
             # END OF Batch read
+    
+    generator = {}
+    # stream read
+    print("stream mode...")
+    while True:
+        to_del = []  
+        for log in logs:
+            generator[log] = stream_read(f[log])
+            line = generator[log].__next__()
+            
+            # If training is done of if there is an issue remove the logging from this file
+            if not line:
+                to_del.append(log)
+                continue
 
-            # stream read
-            print("stream mode...")
-            generator = stream_read(f)
-            while True:
-                line = generator.__next__()
-
-                try:
-                    line = json.loads(line.replace('\'', '\"'))
-                    curr_iter = line['iteration']
-                    if curr_iter > prev_iter:
-                        prev_iter = curr_iter
-                        for metric in METRICS:
-                            if metric in line:
-                                x = np.array([curr_iter])
-                                y = np.array([line[metric]])
-                                vis.line(y, x, win=dic_plots[metric], update='append', env=log)
-                except:
-                    pass
-            # END OF stream read
+            try:
+                line = json.loads(line.replace('\'', '\"'))
+                curr_iter[log] = line['iteration']
+                if curr_iter[log] > prev_iter[log]:
+                    prev_iter[log] = curr_iter[log]
+                    for metric in METRICS:
+                        if metric in line:
+                            x = np.array([curr_iter[log]])
+                            y = np.array([line[metric]])
+                            vis.line(y, x, win=dic_plot[log] [metric], update='append', env=log)
+            except:
+                pass
+        
+        # Remove logs file that are not followed anymore
+        for elem in to_del:
+            print("Stop watching log: " + log)
+            f[log].close
+            logs.remove(elem)
+        if not logs:
+            break
+    print("All training seem to be done")
+        # END OF stream read
 
 
 if __name__ == "__main__":
