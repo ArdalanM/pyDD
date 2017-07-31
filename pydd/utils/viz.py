@@ -45,9 +45,9 @@ def stream_read(thefile):
         line = thefile.readline()
         if not line:
             time.sleep(0.1)  # Sleep briefly
-            # If we wait more than 10 seconds say that the training is over
+            # If we wait more than 20 seconds say that the training is over
             count += 1
-            if count >= 100:
+            if count >= 200:
                 break
             continue
         yield line
@@ -143,7 +143,7 @@ def main():
         
         # Remove logs file that are not followed anymore
         for elem in to_del:
-            print("Stop watching log: " + log)
+            print("Stop watching log: " + elem)
             f[log].close
             logs.remove(elem)
         if not logs:
