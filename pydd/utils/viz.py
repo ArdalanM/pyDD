@@ -34,6 +34,8 @@ METRICS = [
 def get_args():
     parser = argparse.ArgumentParser('data viz')
     parser.add_argument("--log_dir", type=str, default='/mnt/storagebox/sharedData/poc-kaidee/logs.json', help="folder where logs are located")
+    parser.add_argument("--server", type=str, default='http://localhost', help='Adress of the server')
+    parser.add_argument("--port", type=str, default='8097', help='Port of the server')
     args = parser.parse_args()
     return args
 
@@ -72,7 +74,7 @@ def main():
     dic_plot = {}
     f = {}
     for log in logs:
-        vis = Visdom(env=log)
+        vis = Visdom(env=log, port=opt.port, server=opt.server)
 
         # Create empty plot for each metrics
         dic_plots = {}
