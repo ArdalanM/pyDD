@@ -48,8 +48,8 @@ solver = GenericSolver(**solver_params)
 train_data, test_data = SVMConnector(path=tr_f), SVMConnector(path=te_f)
 logs = clf.fit(train_data, validation_data=[test_data], solver=solver, class_weights=class_weights, batch_size=128)
 
-params.update({"resume": True})
-clf = MLP(**params)
+model_params.update({"resume": True})
+clf = MLP(**model_params)
 logs = clf.fit(train_data, validation_data=[test_data], solver=solver, class_weights=class_weights, batch_size=128)
 
 yte_pred = clf.predict(test_data)
