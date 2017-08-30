@@ -18,6 +18,8 @@ np.random.seed(seed)  # for reproducibility
 n_classes = 10
 params = {"port": 8080, "nclasses": n_classes, "gpu": True}
 split_params = {"test_size": 0.2, "random_state": seed}
+solver_params = {'solver_type': 'SGD', 'iterations': 500, 'base_lr': 0.01}
+
 
 folder = "train-from-lmdb"
 if os.path.exists(folder):
@@ -51,8 +53,8 @@ test_data = SVMConnector(path=te_f, lmdb_path=te_lmdb)
 
 # Training model from lmdb data
 clf = MLP(**params)
-optimizer = GenericSolver(solver_type='SGD', iterations=500, base_lr=0.01)
-logs = clf.fit(train_data, validation_data=[test_data], solver=optimizer)
+solver = GenericSolver(**solver_params)
+logs = clf.fit(train_data, validation_data=[test_data], solver=solver)
 
 yte_pred = clf.predict(test_data)
 report = metrics.classification_report(yte, yte_pred)

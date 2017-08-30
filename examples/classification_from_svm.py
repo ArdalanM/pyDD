@@ -15,8 +15,10 @@ from sklearn import datasets, metrics, model_selection, preprocessing
 seed = 1337
 np.random.seed(seed)  # for reproducibility
 n_classes = 10
-params = {"port": 8080, "nclasses": n_classes, "gpu": True}
+model_params = {"port": 8080, "nclasses": n_classes, "gpu": True}
 split_params = {"test_size": 0.2, "random_state": seed}
+solver_params = {'iterations': 500, 'solver_type': "SGD", 'base_lr': 0.01, 'gamma': 0.1, 'stepsize': 30, 'momentum': 0.9}
+class_weights = [1., 1., 1., 1., 1., 1., 1., 1., 1., 1]
 
 # create dataset
 X, y = datasets.load_digits(n_class=n_classes, return_X_y=True)
@@ -29,12 +31,9 @@ te_f = os.path.abspath('x_test.svm')
 datasets.dump_svmlight_file(xtr, ytr, tr_f)
 datasets.dump_svmlight_file(xte, yte, te_f)
 
-# Define models and class weights
-clf = MLP(**params)
-
-solver = GenericSolver(iterations=500, solver_type="SGD", base_lr=0.01, gamma=0.1, stepsize=30, momentum=0.9)
-# one class weight value for each class
-class_weights = [1., 1., 1., 1., 1., 1., 1., 1., 1., 1]
+# Define models and solver
+clf = MLP(**model_params)
+solver = GenericSolver(**solver_params)
 
 train_data, test_data = SVMConnector(path=tr_f), SVMConnector(path=te_f)
 

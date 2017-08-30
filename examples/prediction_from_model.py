@@ -18,6 +18,9 @@ host = 'localhost'
 port = 8080
 nclasses = 10
 sname = 'predict_from_model'
+model_params = {'host': host, 'port': port, 'nclasses': nclasses, 'layers': [100]}
+solver_params = {'solver_type': 'SGD', 'iterations': 500, 'base_lr': 0.1, 'snapshot': 100}
+
 
 model_repo = os.path.abspath('trained_model')
 
@@ -41,10 +44,10 @@ datasets.dump_svmlight_file(xte, yte, te_f)
 xtr_svm, xte_svm = SVMConnector(tr_f), SVMConnector(te_f)
 
 # train model
-params = {'host': host, 'port': port, 'nclasses': nclasses, 'layers': [100]}
-optimizer = GenericSolver(solver_type='SGD', iterations=500, base_lr=0.1, snapshot=100)
-clf = MLP(sname=sname, repository=model_repo, **params)
-clf.fit(xtr_svm, validation_data=[xte_svm, xtr_svm], solver=optimizer)
+
+solver = GenericSolver(**solver_params)
+clf = MLP(sname=sname, repository=model_repo, **model_params)
+clf.fit(xtr_svm, validation_data=[xte_svm, xtr_svm], solver=solver)
 del clf
 
 # load pre trained model

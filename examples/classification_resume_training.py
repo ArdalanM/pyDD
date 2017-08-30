@@ -15,11 +15,12 @@ from sklearn import datasets, metrics, model_selection, preprocessing
 seed = 1337
 n_classes = 10
 repository = "/tmp/pydd_test"
-params = {"repository": repository, "port": 8080, "nclasses": n_classes, "gpu": True}
-split_params = {"test_size": 0.2, "random_state": seed}
 np.random.seed(seed)  # for reproducibility
-solver = GenericSolver(iterations=1000, solver_type="SGD", base_lr=0.01, gamma=0.1, stepsize=30, momentum=0.9, snapshot=200)
 class_weights = [1., 1., 1., 1., 1., 1., 1., 1., 1., 1]
+
+model_params = {"repository": repository, "port": 8080, "nclasses": n_classes, "gpu": True}
+split_params = {"test_size": 0.2, "random_state": seed}
+solver_params = {'iterations': 1000, 'solver_type': "SGD", 'base_lr': 0.01, 'gamma': 0.1, 'stepsize': 30, 'momentum': 0.9, 'snapshot': 200}
 
 
 # remove repository if existe else creates it
@@ -40,8 +41,9 @@ te_f = os.path.abspath('x_test.svm')
 datasets.dump_svmlight_file(xtr, ytr, tr_f)
 datasets.dump_svmlight_file(xte, yte, te_f)
 
-# Define models and class weights
-clf = MLP(**params)
+# Define model and solver
+clf = MLP(**model_params)
+solver = GenericSolver(**solver_params)
 
 train_data, test_data = SVMConnector(path=tr_f), SVMConnector(path=te_f)
 logs = clf.fit(train_data, validation_data=[test_data], solver=solver, class_weights=class_weights, batch_size=128)
