@@ -4,6 +4,7 @@
 @brief:
 """
 
+import os
 import numpy as np
 from scipy import sparse
 
@@ -58,3 +59,18 @@ def ndarray_to_sparse_strings(X):
         list_svm_strings.append(svm_string)
 
     return list_svm_strings
+
+
+def ddify_sentences(sentences, labels, filepath="datasets"):
+    # create folder for each label
+    paths = []
+    for unique_label in set(labels):
+        path = os.path.join(filepath, str(unique_label))
+        paths.append(path)
+        os.makedirs(path, exist_ok=True)
+
+    # each example
+    for i, (sentence, label) in enumerate(zip(sentences, labels)):
+        open("{}/{}/{}.txt".format(filepath, label, i), 'w').write(sentence)
+
+    return filepath
