@@ -7,6 +7,7 @@
 import os
 import numpy as np
 
+
 class Connectors(object):
 
     def __init__(self, X=None, Y=None, path="", lmdb_path="", vocab_path=""):
@@ -102,3 +103,10 @@ class ImageConnector(object):
     """
     def __init__(self):
         pass
+
+
+class TextConnector(Connectors):
+    def __init__(self, sentences=None, labels=None, filepath=""):
+
+        self.name = 'txt'
+        super(TextConnector, self).__init__(X=sentences, Y=labels, path=filepath)

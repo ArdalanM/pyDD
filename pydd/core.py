@@ -2,30 +2,6 @@
 """
 @author: Ardalan MEHRANI <ardalan77400@gmail.com>
 @brief:
-
-
-
-        self.params = {
-            "host": self.host,
-            "port": self.port,
-            "sname": self.sname,
-            "mllib": self.mllib,
-            "description": self.description,
-            "repository": self.repository,
-            "templates": self.templates,
-            "connector": self.connector,
-            "nclasses": self.nclasses,
-            "ntargets": self.ntargets,
-            "gpu": self.gpu,
-            "gpuid": self.gpuid,
-            "template": self.template,
-            "layers": self.layers,
-            "activation": self.activation,
-            "dropout": self.dropout,
-            "regression": self.regression,
-            "finetuning": self.finetuning,
-            "db": self.db,
-        }
 """
 
 import os
@@ -35,7 +11,7 @@ import tempfile
 import numpy as np
 from pydd.utils import time_utils, os_utils
 from pydd.utils.dd_client import DD
-from pydd.utils.dd_utils import to_array
+from pydd.utils.dd_utils import to_array, ddify_sentences
 
 
 class AbstractDDCalls(object):
@@ -211,8 +187,7 @@ class AbstractModels(AbstractDDCalls):
         return self
 
 
-if __name__ == "__main__":
-    """ Simple unit test """
+def test_MLP():
     from sklearn import datasets, preprocessing
 
     # Parameters
@@ -253,3 +228,49 @@ if __name__ == "__main__":
     json_dump = clf._predict_proba([tr_f], parameters_output={"best": -1})
 
     os_utils._remove_files([tr_f])
+
+def test_CNN():
+    from sklearn.datasets import fetch_20newsgroups
+
+    dataset = fetch_20newsgroups()
+    sentences, labels = dataset['data'], dataset['target']
+    nclasses = len(set(labels))
+
+
+    filepath = ddify_sentences(sentences, labels, filepath="agnews")
+
+    model = {"templates": "../templates/caffe", "repository": ""}
+    service_parameters_input = {"connector": "txt", "sentences": True, "sequence": 100, "characters": True,
+                                "alphabet": "abcdefghijklmnopqrstuvwxyz0123456789,;.!?:’\\“/\\\t_@#$%^&*~`+-=<>()[]{}", "test_size": 0.2}
+    service_parameters_output = {}
+    service_parameters_mllib = {"nclasses": nclasses,
+                                "gpu": True,
+                                "template": "convnet", "layers": ["1CR32", "1CR32", "100"],
+                                "activation": "relu", "dropout": 0.5, "db": True}
+
+    clf = AbstractModels(host="localhost", port=8080, description="", mllib="caffe",
+                         service_parameters_input=service_parameters_input,
+                         service_parameters_mllib=service_parameters_mllib,
+                         service_parameters_output=service_parameters_output,
+                         model=model,
+                         tmp_dir=None)
+
+    train_parameters_input = {"db": True}
+    train_parameters_output = {"measure": ["mcll"]}
+    # train_parameters_output = {}
+
+    train_parameters_mllib = {
+        "gpu": service_parameters_mllib["gpu"],
+        "solver": {"iterations": 5000, "base_lr": 0.01, "solver_type": "SGD", "gamma": None, "iter_size": 1,
+                   "lr_policy": None, "momentum": None, 'power': None, 'snapshot': None, 'snapshot_prefix': None,
+                   'solver_type': 'SGD', 'stepsize': None, 'test_initialization': False, 'test_interval': None, 'weight_decay': None},
+        "net": {"batch_size": 128}
+    }
+
+    clf._train([filepath, filepath], train_parameters_input, train_parameters_mllib, train_parameters_output, display_metric_interval=1, async=True)
+
+
+if __name__ == "__main__":
+    """ Simple unit tests"""
+    test_MLP()
+    test_CNN()

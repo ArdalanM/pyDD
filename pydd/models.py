@@ -72,12 +72,12 @@ class MLP(AbstractModels):
         self.service_parameters_input = {"connector": self.connector}
         self.service_parameters_output = {}
         self.service_parameters_mllib = {"nclasses": self.nclasses, "ntargets": self.ntargets,
-                                        "resume": self.resume, "layers": self.layers,
-                                        "activation": self.activation, "gpu": self.gpu,
-                                        "dropout": self.dropout, "regression": self.regression,
-                                        "finetuning": self.finetuning,
-                                        "weights": self.weights,
-                                        "db": self.db}
+                                         "resume": self.resume, "layers": self.layers,
+                                         "activation": self.activation, "gpu": self.gpu,
+                                         "dropout": self.dropout, "regression": self.regression,
+                                         "finetuning": self.finetuning,
+                                         "weights": self.weights,
+                                         "db": self.db}
 
         if not self.resume:
             self.model.update({"templates": self.templates})
@@ -105,7 +105,9 @@ class MLP(AbstractModels):
         self.train_parameters_mllib = {"solver": solver.__dict__,
                                        "gpu": self.gpu,
                                        "net": {"batch_size": batch_size},
-                                       "class_weights": class_weights if class_weights else [1.] * self.service_parameters_mllib["nclasses"],
+                                       "class_weights": class_weights if class_weights else [1.] *
+                                                                                            self.service_parameters_mllib[
+                                                                                                "nclasses"],
                                        "resume": self.service_parameters_mllib["resume"]
                                        }
         if self.gpu:
@@ -116,7 +118,7 @@ class MLP(AbstractModels):
             self.data.append(train_data.path)
 
             if train_data.lmdb_path:
-                    os.symlink(train_data.lmdb_path, os.path.join(self.repository, "train.lmdb"))
+                os.symlink(train_data.lmdb_path, os.path.join(self.repository, "train.lmdb"))
 
             if validation_data:
 
@@ -129,7 +131,7 @@ class MLP(AbstractModels):
                     for i, connector in enumerate(validation_data):
                         self.data.append(connector.path)
                         if connector.lmdb_path:
-                            os.symlink(connector.lmdb_path, os.path.join(self.repository, "test_{}.lmdb".format(i+1)))
+                            os.symlink(connector.lmdb_path, os.path.join(self.repository, "test_{}.lmdb".format(i + 1)))
 
         elif train_data.name == "array":
             train_f = os.path.join(self.repository, "x_train_{}.svm".format(time_utils.fulltimestamp()))
@@ -264,7 +266,9 @@ class LR(AbstractModels):
 
         self.train_parameters_mllib = {"solver": solver.__dict__,
                                        "net": {"batch_size": batch_size},
-                                       "class_weights": class_weights if class_weights else [1.] * self.service_parameters_mllib["nclasses"]
+                                       "class_weights": class_weights if class_weights else [1.] *
+                                                                                            self.service_parameters_mllib[
+                                                                                                "nclasses"]
                                        }
         if self.gpu:
             self.train_parameters_mllib.update({"gpu": self.gpu, "gpuid": self.gpuid})
@@ -286,7 +290,7 @@ class LR(AbstractModels):
                     for i, connector in enumerate(validation_data):
                         self.data.append(connector.path)
                         if connector.lmdb_path:
-                            os.symlink(connector.lmdb_path, os.path.join(self.repository, "test_{}.lmdb".format(i+1)))
+                            os.symlink(connector.lmdb_path, os.path.join(self.repository, "test_{}.lmdb".format(i + 1)))
 
         elif train_data.name == "array":
             train_f = os.path.join(self.repository, "x_train_{}.svm".format(time_utils.fulltimestamp()))
@@ -480,52 +484,230 @@ class XGB(AbstractModels):
         return self.train_logs
 
 
-if __name__ == "__main__":
-    """Simple unit test"""
-    from sklearn import datasets, model_selection, preprocessing
+class CNN(AbstractModels):
+    """
+
+    """
+
+    def __init__(self, host="localhost",
+                 port=8080,
+                 sname="",
+                 mllib="caffe",
+                 description="",
+                 repository="",
+                 templates="../templates/caffe",
+                 connector="txt",
+                 nclasses=None,
+                 ntargets=None,
+                 gpu=False,
+                 gpuid=0,
+                 resume=False,
+                 template="convnet",
+                 layers=["1CR32", "1CR32", "128"],
+                 activation="relu",
+                 dropout=0.5,
+                 regression=False,
+                 finetuning=False,
+                 weights=False,
+                 db=True,
+                 tmp_dir=None,
+                 sentences=False,
+                 characters=False,
+                 sequence=None,
+                 read_forward=False,
+                 alphabet="abcdefghijklmnopqrstuvwxyz0123456789,;.!?:’\“/\	_@#$%^&*~`+-=<>()[]{}",
+                 sparse=False,
+
+                 ):
+
+        self.host = host
+        self.port = port
+        self.sname = sname
+        self.mllib = mllib
+        self.description = description
+        self.repository = repository
+        self.templates = templates
+        self.connector = connector
+        self.nclasses = nclasses
+        self.ntargets = ntargets
+        self.gpu = gpu
+        self.gpuid = gpuid
+        self.template = template
+        self.resume = resume
+        self.layers = layers
+        self.activation = activation
+        self.dropout = dropout
+        self.regression = regression
+        self.finetuning = finetuning
+        self.weights = weights
+        self.db = db
+        self.tmp_dir = tmp_dir
+
+        self.sentences = sentences
+        self.characters = characters
+        self.sequence = sequence
+        self.read_forward = read_forward
+        self.alphabet = alphabet
+        self.sparse = sparse
+
+        self.service_parameters_input = {"connector": self.connector,
+                                         "sentences": self.sentences,
+                                         "characters": self.characters,
+                                         "sequence": self.sequence,
+                                         # "read_forward": self.read_forward,
+                                         # "alphabet": self.alphabet,
+}
+        self.service_parameters_output = {}
+        self.model = {"repository": self.repository}
+        self.service_parameters_mllib = {"nclasses": self.nclasses,
+                                         # "ntargets": self.ntargets,
+                                         # "resume": self.resume,
+                                         "layers": self.layers,
+                                         "activation": self.activation,
+                                         "dropout": self.dropout,
+                                         # "regression": self.regression,
+                                         # "finetuning": self.finetuning,
+                                         # "weights": self.weights,
+                                         "db": self.db,
+                                         }
+
+        if not self.resume:
+            self.model.update({"templates": self.templates})
+            self.service_parameters_mllib.update({"template": self.template})
+
+        if self.gpu:
+            self.service_parameters_mllib.update({"gpuid": self.gpuid})
+
+        super(CNN, self).__init__(host=self.host, port=self.port, sname=self.sname,
+                                  description=self.description, mllib=self.mllib,
+                                  service_parameters_input=self.service_parameters_input,
+                                  service_parameters_output=self.service_parameters_output,
+                                  service_parameters_mllib=self.service_parameters_mllib,
+                                  model=self.model, tmp_dir=self.tmp_dir)
+
+    def fit(self, train_data, validation_data=[], solver=None, batch_size=128, class_weights=None,
+            metrics=["mcll", "accp"], async=True, display_metric_interval=1):
+
+        # df: True otherwise core dump when training on svm data
+        self.train_parameters_input = {"db": True}
+        self.train_parameters_input.update(train_data.train_parameters_input)
+
+        self.train_parameters_output = {"measure": metrics}
+
+        self.train_parameters_mllib = {"solver": solver.__dict__,
+                                       "gpu": self.gpu,
+                                       "net": {"batch_size": batch_size}
+                                       # "class_weights": class_weights if class_weights else [1.] *
+                                       #                                                      self.service_parameters_mllib[
+                                       #                                                          "nclasses"],
+                                       # "resume": self.service_parameters_mllib["resume"]
+                                       }
+        if self.gpu:
+            self.train_parameters_mllib.update({"gpuid": self.gpuid})
+
+        self.data = []
+        if train_data.name == "txt":
+
+            if os.path.exists(train_data.path):
+                self.data.append(train_data.path)
+                # self.data.append(train_data.path)
+
+                # os.symlink(train_data.filepath, os.path.join(self.repository, "train.lmdb"))
+
+            # train_f = os.path.join(self.repository, "x_train_{}.svm".format(time_utils.fulltimestamp()))
+            # dump_svmlight_file(train_data.X, train_data.Y, train_f)
+            # self.data.append(train_f)
+            #
+            # if validation_data:
+            #     for i, conn in enumerate(validation_data):
+            #         valid_f = os.path.join(self.repository, "x_val{}_{}.svm".format(i, time_utils.fulltimestamp()))
+            #         dump_svmlight_file(conn.X, conn.Y, valid_f)
+            #         self.data.append(valid_f)
+
+        self.train_logs = self._train(self.data,
+                                      self.train_parameters_input,
+                                      self.train_parameters_mllib,
+                                      self.train_parameters_output, display_metric_interval, async)
+
+        return self.train_logs
+
+
+def test_MLP():
+
+        from sklearn import datasets, model_selection, preprocessing
+        from pydd.solver import GenericSolver
+        from pydd.connectors import ArrayConnector, SVMConnector
+        from pydd.utils import os_utils
+
+        # Parameters
+        seed = 1337
+        np.random.seed(seed)  # for reproducibility
+        n_classes = 10
+        test_size = 0.2
+        host = 'localhost'
+        port = 8080
+        iteration = 100
+        lr = 0.01
+        gpu = False
+
+        X, y = datasets.load_digits(n_class=n_classes, return_X_y=True)
+        X = preprocessing.StandardScaler().fit_transform(X)
+        x_train, x_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=test_size, random_state=seed)
+        tr_f = os.path.abspath('x_train.svm')
+        te_f = os.path.abspath('x_test.svm')
+        datasets.dump_svmlight_file(x_train, y_train, tr_f)
+        datasets.dump_svmlight_file(x_test, y_test, te_f)
+
+        # train_data = ArrayConnector(x_train, y_train)
+        # val_data = ArrayConnector(x_train, y_train)
+        train_data = SVMConnector(tr_f)
+        val_data = SVMConnector(te_f)
+
+        clf = MLP(host=host, port=port, nclasses=n_classes, layers=[100], gpu=gpu)
+        solver = GenericSolver(iterations=iteration, test_interval=30, solver_type="SGD", base_lr=lr)
+        clf.fit(train_data, validation_data=[val_data], solver=solver)
+        clf.predict_proba(train_data)
+
+        clf.fit(train_data, validation_data=[val_data], solver=solver)
+        y_pred = clf.predict_proba(train_data)
+
+        clf = LR(host=host, port=port, nclasses=n_classes, gpu=gpu)
+        solver = GenericSolver(iterations=iteration, solver_type="SGD", base_lr=lr)
+        clf.fit(train_data, solver=solver)
+        y_pred = clf.predict_proba(train_data)
+
+        clf = XGB(host=host, port=port, nclasses=n_classes)
+        # logs = clf.fit(train_data, validation_data=[val_data])
+
+        os_utils._remove_files([tr_f, te_f])
+
+
+def test_CNN():
+    # early version not fully tested :)
+    from sklearn.datasets import fetch_20newsgroups
+    from pydd.connectors import TextConnector
     from pydd.solver import GenericSolver
-    from pydd.connectors import ArrayConnector, SVMConnector
+    from pydd.utils.dd_utils import ddify_sentences
     from pydd.utils import os_utils
 
-    # Parameters
-    seed = 1337
-    np.random.seed(seed)  # for reproducibility
-    n_classes = 10
-    test_size = 0.2
     host = 'localhost'
     port = 8080
-    iteration=100
-    lr=0.01
-    gpu=False
+    n_classes = 20
+    iteration = 500
+    lr = 0.01
 
-    X, y = datasets.load_digits(n_class=n_classes, return_X_y=True)
-    X = preprocessing.StandardScaler().fit_transform(X)
-    x_train, x_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=test_size, random_state=seed)
-    tr_f = os.path.abspath('x_train.svm')
-    te_f = os.path.abspath('x_test.svm')
-    datasets.dump_svmlight_file(x_train, y_train, tr_f)
-    datasets.dump_svmlight_file(x_test, y_test, te_f)
+    datasets = fetch_20newsgroups()
+    sentences, labels = datasets['data'], datasets['target']
+    filepath = ddify_sentences(sentences, labels, filepath="agnews")
 
-    # train_data = ArrayConnector(x_train, y_train)
-    # val_data = ArrayConnector(x_train, y_train)
-    train_data = SVMConnector(tr_f)
-    val_data = SVMConnector(te_f)
-
-    clf = MLP(host=host, port=port, nclasses=n_classes, layers=[100], gpu=gpu)
-    solver = GenericSolver(iterations=iteration, test_interval=30, solver_type="SGD", base_lr=lr)
-    clf.fit(train_data, validation_data=[val_data],  solver=solver)
-    clf.predict_proba(train_data)
-
-    clf.fit(train_data, validation_data=[val_data], solver=solver)
-    y_pred = clf.predict_proba(train_data)
-
-    clf = LR(host=host, port=port, nclasses=n_classes, gpu=gpu)
+    train = TextConnector(filepath=filepath)
     solver = GenericSolver(iterations=iteration, solver_type="SGD", base_lr=lr)
-    clf.fit(train_data, solver=solver)
-    y_pred = clf.predict_proba(train_data)
+    clf = CNN(host=host, port=port, nclasses=n_classes, gpu=True, characters=True, sequence=400, sentences=False)
+    clf.fit(train, solver=solver, metrics=[])
 
-    clf = XGB(host=host, port=port, nclasses=n_classes)
-    # logs = clf.fit(train_data, validation_data=[val_data])
+    os_utils._remove_dirs([filepath])
 
-    os_utils._remove_files([tr_f, te_f])
+if __name__ == "__main__":
 
+    test_MLP()
+    test_CNN()
