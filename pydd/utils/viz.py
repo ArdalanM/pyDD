@@ -151,7 +151,7 @@ def main():
         if not logs:
             break
     print("All training seem to be done")
-        # END OF stream read
+    # END OF stream read
 
 
 if __name__ == "__main__":

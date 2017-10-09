@@ -229,6 +229,7 @@ def test_MLP():
 
     os_utils._remove_files([tr_f])
 
+
 def test_CNN():
     from sklearn.datasets import fetch_20newsgroups
 
