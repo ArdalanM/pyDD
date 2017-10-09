@@ -24,7 +24,8 @@ setup(name='pyDD',
       packages=find_packages(),
       entry_points={
           'console_scripts': [
-              'pydd = pydd.utils.viz:main'
+              'pydd=pydd.utils.viz:main',
+              'pydd-train-mlp=pydd.pydd_train_mlp:main'
           ]},
 
       )
