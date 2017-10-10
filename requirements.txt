@@ -9,3 +9,4 @@ pyzmq
 six
 visdom
 tensorboard_logger
+gensim

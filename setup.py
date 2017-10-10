@@ -25,7 +25,8 @@ setup(name='pyDD',
       entry_points={
           'console_scripts': [
               'pydd=pydd.utils.viz:main',
-              'pydd-train-mlp=pydd.pydd_train_mlp:main'
+              'pydd-train-mlp=pydd.train_calls:main',
+              'pydd-vectorize-csv=pydd.dataset_vectorizer:vectorize_csv'
           ]},
 
       )
