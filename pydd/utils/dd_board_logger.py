@@ -37,10 +37,12 @@ class DDBoard(object):
     def ddb_logger_file(self, json_file):
         """json_file = the json file to be analyzed"""
         # Should we check the existence of the JSon source?
-        with open(json_file, 'r') as json_src:
-            for line in json_src:
-                json_line = json.loads(line)
-                self.ddb_logger(json_line)
-
+        if os.path.exists(json_file):
+            with open(json_file, 'r') as json_src:
+                for line in json_src:
+                    json_line = json.loads(line)
+                    self.ddb_logger(json_line)
+        else:
+            raise
 if __name__ == "__main__":
     vec = DDBoard("dir", "subdir")
