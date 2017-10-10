@@ -193,8 +193,8 @@ class ContinuousVectorizers(object):
 
             if self.scale:
                 mean, std = dfcol.mean(), dfcol.std()
-                if std.sum() == 0:
-                    if mean.sum() == 0:
+                if std == 0:
+                    if mean == 0:
                         print("warning: column: '{}', all the values are zeros".format(col))
                     else:
                         print("warning: column: '{}', all the values are identical".format(col))
@@ -542,7 +542,6 @@ def ddify_csv(input_csv='news20.csv',
         indexes['cat'] = "{}-{}".format(curr_idx, curr_idx + x.shape[1] - 1)
         embedding_max_idx = int(
             np.max([np.max([k for k in vec.map_values_indexes[col].values()]) for col in vec.map_values_indexes]))
-        print(embedding_max_idx)
         indexes['embedding_max_index'] = embedding_max_idx
 
         fmts.extend(["%.d"] * x.shape[1])
@@ -573,12 +572,12 @@ def ddify_csv_args():
     parser.add_argument("--scale_continuous", type=bool, default=True)
 
     parser.add_argument("--txt_fields", nargs='+', type=str, default=["content_title", "content_body"])
-    parser.add_argument("--cnt_fields", nargs='+', type=str, default=['user_customerSpecific_textLikeCount', 'user_customerSpecific_textLikeCount'])
+    parser.add_argument("--cnt_fields", nargs='+', type=str, default=['user_customerSpecific_textLikeCount'])
     parser.add_argument("--cat_fields", nargs='+', type=str, default=['user_customerSpecific_seek', 'user_customerSpecific_gender'])
     parser.add_argument("--label_field", type=str, default="content_customerSpecific_moderationId")
     parser.add_argument("--alphabet", type=str, default="""abcdefghijklmnopqrstuvwxyz0123456789,;.!?:'\"/\\|_@#$%^&*~`+-=<>()[]{}""")
 
-    parser.add_argument("--word_vectors_path", type=str, default="/home/ardalan.mehrani/projects/nlp-benchmarks/GoogleNews-vectors-negative300.bin")
+    parser.add_argument("--word_vectors_path", type=str, default="")
     parser.add_argument("--txt_mapping_path", type=str, default="")
     parser.add_argument("--cnt_mapping_path", type=str, default="")
     parser.add_argument("--cat_mapping_path", type=str, default="")
