@@ -8,3 +8,4 @@ tornado
 pyzmq
 six
 visdom
+tensorboard_logger
